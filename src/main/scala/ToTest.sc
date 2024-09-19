@@ -1,11 +1,11 @@
 //Test with the creation as an Array of Cells
 case class Cell(x: Int, y : Int)
 
-val cell1 = Cell(11,11)
+val cell1 = Cell(12,12)
 cell1.x
 cell1.y
 
-val cell2 = Cell(11,11)
+val cell2 = Cell(12,12)
 
 case class Field(cells : Array[Cell])
 
