@@ -1,6 +1,8 @@
 //Test with the creation as an Array of Cells
 case class Cell(x: Int, y : Int)
 
+val cell2 = Cell(10,10)
+
 val cell1 = Cell(11,11)
 cell1.x
 cell1.y
