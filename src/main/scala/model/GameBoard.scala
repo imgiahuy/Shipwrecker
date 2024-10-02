@@ -5,7 +5,7 @@ import scala.reflect.ClassTag
 case class GameBoard(cells : Board[Cell]) {
   def this(size: Int) = this(new Board[Cell](size, Cell(0)))
 
-  def placeShip(ship: Ship, where: (Int, Int), richtung: Boolean): Int = {
+  def placeShip(ship: Ship, where: (Int, Int), richtung: String): Int = {
     //Richtung == True -> horizontal -> x + 1
     //Richtung == False -> vertical -> y + 1
     if (ship.sizeOf() < 0 || ship.sizeOf() > 5) {
@@ -13,7 +13,7 @@ case class GameBoard(cells : Board[Cell]) {
     } else if (cells.cells(where._1)(where._2) != Cell(0)) {
       0
     } else {
-      if (richtung) {
+      if (richtung == "h") {
         var x = where._1
         var i = 0
         while (i < ship.sizeOf()) {
@@ -21,7 +21,7 @@ case class GameBoard(cells : Board[Cell]) {
           x = x + 1
           i = i + 1
         }
-      } else if (!richtung) {
+      } else if (richtung == "v") {
         var y = where._2
         var i = 0
         while (i < ship.sizeOf()) {
@@ -53,7 +53,7 @@ case class GameBoard(cells : Board[Cell]) {
     val newBoard = new Board[Cell](size, Cell(0))
     for (i <- cells.cells.indices) {
       for (j <- cells.cells(i).indices) {
-        if (cells.cells(i)(j) != Cell(0)) {
+        if (cells.cells(i)(j) != Cell(0) && cells.cells(i)(j) != Cell(9) ) {
           newBoard.replace(i, j, Cell(1))
         }
       }

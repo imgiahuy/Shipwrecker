@@ -1,6 +1,8 @@
-import model.{Cell, *}
-import org.scalatest.wordspec.AnyWordSpec
+package model
+
+import model.*
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class SolverSpec extends AnyWordSpec with Matchers {
 
@@ -26,7 +28,7 @@ class SolverSpec extends AnyWordSpec with Matchers {
       val board1 = new GameBoard(12)
       val board2 = new GameBoard(12)
       val ship = new Ship(3, Cell(1))
-      board2.placeShip(ship, (1, 1), true)
+      board2.placeShip(ship, (1, 1), "h")
 
       val solver = Solver()
       solver.solved(board1, board2) should be(false)
