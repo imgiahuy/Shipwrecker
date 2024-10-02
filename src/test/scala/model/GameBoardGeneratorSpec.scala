@@ -1,6 +1,8 @@
-import model._
-import org.scalatest.wordspec.AnyWordSpec
+package model
+
+import model.*
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class GameBoardGeneratorSpec extends AnyWordSpec with Matchers {
 

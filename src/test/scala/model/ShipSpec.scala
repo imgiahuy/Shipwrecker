@@ -1,6 +1,8 @@
+package model
+
+import model.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import model._
 
 class ShipSpec extends AnyWordSpec with Matchers {
 

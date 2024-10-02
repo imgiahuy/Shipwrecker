@@ -1,6 +1,8 @@
+package model
+
+import model.{Board, Cell}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import model.{Board, Cell}
 
 class BoardSpec extends AnyWordSpec with Matchers {
   "A Board" when {
