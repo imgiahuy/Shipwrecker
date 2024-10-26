@@ -10,7 +10,12 @@ class SolverSpec extends AnyWordSpec with Matchers {
     "return true for identical boards" in {
       val board1 = new GameBoard(12)
 
+      board1.cells.replace(1,1,Cell(1))
+
       val board2 = new GameBoard(12)
+
+      board2.cells.replace(1, 1, Cell(1))
+
 
       val solver = Solver()
       solver.solved(board1, board2) should be(true)

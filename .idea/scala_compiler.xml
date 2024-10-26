@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="sbt 1" modules="shipwrecker,shipwrecker_1622,shipwrecker_1779,shipwrecker_2621,shipwrecker_3566,shipwrecker_6279,shipwrecker_8766" />
+    <profile name="sbt 1" modules="shipwrecker,shipwrecker_1622,shipwrecker_1779,shipwrecker_2621,shipwrecker_2973,shipwrecker_3566,shipwrecker_6279,shipwrecker_8766" />
   </component>
 </project>
