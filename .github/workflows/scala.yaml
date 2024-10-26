@@ -29,7 +29,7 @@ jobs:
      - name: Build Project and export Coverage
        env:
          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-         COVERALLS_REPO_TOKEN: ${{ WhBYZaDtgfPE8CrTXE7fI6sRfn2ah1N0v }}
+         COVERALLS_REPO_TOKEN: ${{  secrets.COVERALLS_REPO_TOKEN }}
        run: |
          export CI_BRANCH="${GITHUB_REF#refs/heads/}"
          sbt clean jacoco jacocoCoveralls
