@@ -15,6 +15,6 @@ case class Board[Cell : ClassTag](cells : Array[Array[Cell]]) {
     }
   }
   def display(): Unit = {
-    println(cells.map(_.mkString(" ")).mkString("\n"))
+    println(cells.map(_.mkString(" | ")).mkString("\n"))
   }
 }

@@ -1,118 +1,114 @@
 package aview
-import model.*
+import controller.Controller
+import util.Observer
 
-import scala.collection.mutable.ArrayBuffer
 import scala.io.StdIn.*
 
-class tui {
+class tui(controller : Controller) extends Observer {
 
-  def processInputLine(input: String, b1: GameBoard, b2: GameBoard, show : GameBoard, b1_blank: GameBoard, b2_blank: GameBoard,
-                       player1: Player, player2: Player ): GameBoard = {
+  controller.add(this)
+
+  val size = 12
+
+  def processInputLine(input: String): Unit = {
+
     input match {
-      case "new game" =>
-        var i = 0
-        b1.clean()
-        b2.clean()
-        print("Player " + player1.name + "'s board: ...\n")
-        b1.display()
-        print("Player " + player2.name + "'s board: ...\n")
-        b2.display()
-        show
-      case "quit" => show
-      case "place ship player 1" =>
-        var numShipHolder = player1.numShip
-        while( 0 < numShipHolder ) {
-          print(player1.name + " place ship...\n")
-          print("ship size: " + numShipHolder +"\n")
-          b1.display()
-          print("x postion: \n")
-          val pox = readInt()
-          print("y postion: \n")
-          val poy = readInt()
-          print("which direction:\n")
-          val richtung = readLine()
-          b1.placeShip(new Ship(numShipHolder,Cell(numShipHolder)),(pox,poy),richtung)
-          b1.display()
-          numShipHolder = numShipHolder - 1
-        }
-        show
-      case "place ship player 2" =>
-        var numShipHolder2 = player2.numShip
-        while( 0 < numShipHolder2 ) {
-          print(player2.name + " place ship...\n")
-          print("ship size: " + numShipHolder2 + "\n")
-          b2.display()
-          print("x postion: \n")
-          val pox = readInt()
-          print("y postion: \n")
-          val poy = readInt()
-          print("which direction:\n")
-          val richtung = readLine()
-          b2.placeShip(new Ship(numShipHolder2,Cell(numShipHolder2)),(pox,poy),richtung)
-          b2.display()
-          numShipHolder2 = numShipHolder2 - 1
-        }
-        show
-      case "" =>
-        println("Input cannot be empty.") // handle empty input
-        show
-      case "attack player 2" =>
-        show.display()
-        print("attack x postion: \n")
-        val pox = readInt()
-        print("attack y postion: \n")
-        val poy = readInt()
-        val hit = b2.hit(pox,poy)
-        if (hit) {
-          print("hit successful at " + pox + ", " + poy + "\n")
-          b1_blank.cells.replace(pox, poy, Cell(1))
-          b1_blank.display()
+      case "new game" => controller.clean()
+
+      case "quit" =>
+
+      case "place ship" =>
+        print("Who gets to place ships first, " + controller.getNamePlayer1 + " or " + controller.getNamePlayer2 + "?\n")
+        val input = readLine()
+
+        val name = if (input == controller.getNamePlayer1) {
+          controller.getNamePlayer1
+        } else if (input == controller.getNamePlayer2) {
+          controller.getNamePlayer2
         } else {
-          print("hit failed at " + pox + ", " + poy + "\n")
-          b1_blank.cells.replace(pox, poy, Cell(9)) //for now 9 is a failed hit
-          b1_blank.display()
+          throw new IllegalArgumentException("Unknown player name")
         }
-        show
-      case "attack player 1" =>
-        show.display()
-        print("attack x postion: \n")
-        val pox = readInt()
-        print("attack y postion: \n")
-        val poy = readInt()
-        val hit = b1.hit(pox,poy)
-        if (hit) {
-          print("hit successful at " + pox + ", " + poy + "\n")
-          b2_blank.cells.replace(pox, poy, Cell(1))
-          b2_blank.display()
+
+        var numShip = controller.getNumShip(name)
+        controller.showMe()
+
+        while(numShip > 0) {
+          var validInput = false // Flag to ensure valid input
+          var pox = 0
+          var poy = 0
+          var richtung = ""
+
+          // Loop until valid ship placement inputs are provided
+          while (!validInput) {
+            print("\n")
+            try {
+              print("Place ship at position x: \n")
+              pox = readInt()
+              print("Place ship at position y: \n")
+              poy = readInt()
+              print("Horizontal (h) or vertical (v)? \n")
+              richtung = readLine().trim.toLowerCase
+              // Check for valid input (richtung must be 'h' or 'v')
+              if (richtung == "h" || richtung == "v") {
+                validInput = controller.placeShips(name, numShip, pox, poy, richtung) // Try to place the ship
+                if (!validInput) {
+                  print("Unable to place ship, please try again\n")
+                }
+              } else {
+                print("Invalid direction, please enter 'h' for horizontal or 'v' for vertical.\n")
+              }
+            } catch {
+              case _: NumberFormatException =>
+                print("Invalid input, please enter a valid number for positions.\n")
+            }
+          }
+          // Show the board after successfully placing the ship
+          print("\n")
+          controller.boardShow(name)
+          numShip = numShip - 1
+        }
+
+
+      case "attack" =>
+        print("Who attacks? " + controller.getNamePlayer1 + " or " + controller.getNamePlayer2 + "?\n")
+        val input = readLine()
+
+        if (input == controller.getNamePlayer1 || input == controller.getNamePlayer2) {
+          val attacker = if (input == controller.getNamePlayer1) controller.getNamePlayer1 else controller.getNamePlayer2
+          val defender = if (input == controller.getNamePlayer1) controller.getNamePlayer2 else controller.getNamePlayer1
+          performAttack(attacker, defender)
         } else {
-          print("hit failed at " + pox + ", " + poy + "\n")
-          b2_blank.cells.replace(pox, poy, Cell(9)) //for now 9 is a failed hit
-          b2_blank.display()
+          print("Invalid input. Please enter a valid player name.\n")
         }
-        show
+        def performAttack(attacker: String, defender: String): Unit = {
+          print(attacker + " attacks " + defender + "!\n")
+          controller.blankBoardShow(attacker)
+          print("\n")
+          print("Attack position x: \n")
+          val pox = readInt()
+          print("Attack position y: \n")
+          val poy = readInt()
+          if (controller.attack(pox, poy, defender)) {
+            print("Hit successful at (" + pox + " , " + poy + ")\n")
+          } else {
+            print("Hit failed, miss at (" + pox + " , " + poy + ")\n")
+          }
+          controller.blankBoardShow(attacker)
+        }
       case "check" =>
-        val solver =  Solver()
-        if (solver.solved(b1_blank.copyBoard(), b2.copyBoard())) {
-          print("Game finish, player " + player1.name + " has won")
-          b2.display()
+        val check = controller.solver()
+        if(check == 1) {
+          print("Game finish!!!\n")
+          print(controller.getNamePlayer2 + " has won the game.\n")
+        } else if (check == 2) {
+          print("Game finish!!!\n")
+          print(controller.getNamePlayer1 + " has won the game.\n")
+        } else {
+          print("Game not finish!!!")
         }
-        else if (solver.solved(b2_blank.copyBoard(), b1.copyBoard())) {
-          print("Game finish, player " + player2.name + " has won")
-          b1.display()
-        }
-        else{
-          print("Game not finish")
-        }
-        show
-      case "test only" =>
-        b1_blank.copyBoard().display()
-        print("\n")
-        b2.copyBoard().display()
-        print("\n")
-        b2_blank.copyBoard().display()
-        print("\n")
-        b1.copyBoard().display()
-        show
+      case "" =>
+        println("Input cannot be empty.")
     }
   }
+  override def update(): Unit = print("")
 }
