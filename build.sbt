@@ -6,9 +6,8 @@ lazy val root = (project in file("."))
     name := "shipwrecker",
     libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test,
-    // Scoverage settings
-    coverageEnabled := true,           // Ensure proper commas and no parentheses are missing
-    coverageMinimum := 80,             // Example: require at least 80% coverage
-    coverageFailOnMinimum := true
-  )
-
+    jacocoCoverallsServiceName := "github-actions", 
+    jacocoCoverallsBranch := sys.env.get("CI_BRANCH"),
+    jacocoCoverallsPullRequest := sys.env.get("GITHUB_EVENT_NAME"),
+    jacocoCoverallsRepoToken := sys.env.get("COVERALLS_REPO_TOKEN")
+)
