@@ -1,6 +1,7 @@
 package model
 
 import model.*
+import model.Value.O
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -10,11 +11,11 @@ class SolverSpec extends AnyWordSpec with Matchers {
     "return true for identical boards" in {
       val board1 = new GameBoard(12)
 
-      board1.cells.replace(1,1,Cell(1))
+      board1.cells.replace(1,1,Cell(O))
 
       val board2 = new GameBoard(12)
 
-      board2.cells.replace(1, 1, Cell(1))
+      board2.cells.replace(1, 1, Cell(O))
 
 
       val solver = Solver()
@@ -32,7 +33,7 @@ class SolverSpec extends AnyWordSpec with Matchers {
     "return false for boards with different values" in {
       val board1 = new GameBoard(12)
       val board2 = new GameBoard(12)
-      val ship = new Ship(3, Cell(1))
+      val ship = new Ship(3, Cell(O))
       board2.placeShip(ship, (1, 1), "h")
 
       val solver = Solver()
