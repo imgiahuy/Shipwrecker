@@ -20,18 +20,24 @@ class ControllerSpec extends AnyWordSpec with Matchers {
   "Controller" should {
 
     "place ships correctly for player1" in {
-      val result = controller.placeShips(player1.name, numShip = 1, pox = 2, poy = 3, richtung = "h")
+      val result = controller.placeShips(player1.name,  2, pox = 2, poy = 3, "h")
       result should be (true)  // Assuming ship placement is valid
     }
 
     "place ships correctly for player2" in {
-      val result = controller.placeShips(player2.name, numShip = 1, pox = 5, poy = 4, richtung = "v")
+      val result = controller.placeShips(player2.name, 2, pox = 5, poy = 4, "v")
       result should be (true)  // Assuming ship placement is valid
     }
 
     "fail to place ships for an unknown player" in {
       assertThrows[IllegalArgumentException] {
-        controller.placeShips("UnknownPlayer", numShip = 1, pox = 1, poy = 1, richtung = "horizontal")
+        controller.placeShips("UnknownPlayer", 1, pox = 1, poy = 1, "horizontal")
+      }
+    }
+
+    "fail to place ships for an unknown player" in {
+      assertThrows[IllegalArgumentException] {
+        controller.placeShips("UnknownPlayer", 1, pox = 1, poy = 1, "horizontal")
       }
     }
 

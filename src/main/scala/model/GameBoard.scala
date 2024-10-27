@@ -32,10 +32,9 @@ case class GameBoard(cells: Board[Cell]) {
   def hit(where: (Int, Int)): Boolean = {
     val (row, col) = where
     val currentCell = cells.cells(row)(col)
-    if (currentCell == Cell(Value.☐)) {
+    if (currentCell == Cell(Value.☐) || currentCell == Cell(Value.X) ) {
       false
     } else {
-      //cells.replace(row, col, Cell(1)) // Mark as hit
       true
     }
   }

@@ -85,6 +85,7 @@ class tui(controller : Controller) extends Observer {
 
         // Display the board after the attempted placement
         controller.boardShow(name)
+
       case "attack" =>
         print("Who attacks? " + controller.getNamePlayer1 + " or " + controller.getNamePlayer2 + "?\n")
         val input = readLine()
@@ -111,6 +112,7 @@ class tui(controller : Controller) extends Observer {
           }
           controller.blankBoardShow(attacker)
         }
+
       case "check" =>
         val check = controller.solver()
         if(check == 1) {
