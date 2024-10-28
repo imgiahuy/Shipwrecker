@@ -1,71 +1,96 @@
 package aview
-
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.matchers.should.Matchers
-import controller.Controller
+import controller.*
 import model.*
+import model.Value.{O, X}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-// Test Stub for Controller
-class TestController extends Controller(
-  b1 = new GameBoard(10),
-  b2 = new GameBoard(10),
-  show = new GameBoard(10),
-  b1_blank = new GameBoard(10),
-  b2_blank = new GameBoard(10),
-  player1 = Player("Alice", 5),
-  player2 = Player("Bob", 5)
-) {
-  // Overriding methods to capture interactions
-  var cleanCalled = false
-  var attackCalled = false
-  var lastAttackPos: (Int, Int) = (0, 0)
-  var lastAttacker: String = ""
+class TuiSpec  extends AnyWordSpec with Matchers {
+  "A Shipwrecker TUI" should {
 
-  override def clean(): Unit = {
-    cleanCalled = true
-  }
+    val player1 = new Player("Alice", 5) // Dummy Player with name Alice and 5 ships
+    val player2 = new Player("Bob", 0) // Dummy Player with name Bob and 0 ships
 
-  override def attack(pox: Int, poy: Int, player: String): Boolean = {
-    attackCalled = true
-    lastAttackPos = (pox, poy)
-    lastAttacker = player
-    true // Simulating a hit
-  }
+    val b1 = new GameBoard(10) // 10x10 GameBoard for player1
+    val b2 = new GameBoard(10) // 10x10 GameBoard for player2
+    val show = new GameBoard(10) // Show board for display
+    val b1_blank = new GameBoard(10) // Blank board for player1
+    val b2_blank = new GameBoard(10) // Blank board for player2
 
-  // Additional stubs for required methods
-  override def getNamePlayer1: String = "Alice"
-  override def getNamePlayer2: String = "Bob"
-  override def getNumShip(player: String): Int = 1
-  override def solver(): Int = 1 // Simulate player 1 as the winner
-}
+    // Create controller with the above dependencies
+    val controller = new Controller(b1, b2, show, b1_blank, b2_blank, player1, player2)
 
-class TuiSpec extends AnyWordSpec with Matchers {
-  // Create an instance of the TestController
-  val testController = new TestController
-  val tui = new tui(testController)
+    val tui = new tui(controller)
 
-  "TUI" should {
+    "do nothing on input 'quit'" in {
+      tui.processInputLine("quit")
+    }
 
-    "call clean method on new game input" in {
+    "create new game by cleaning everything" in {
       tui.processInputLine("new game")
-      testController.cleanCalled should be (true) // Verify if clean was called
+      b1.isEmpty should be (true)
+      b2.isEmpty should be(true)
+      show.isEmpty should be(true)
+      b1_blank.isEmpty should be(true)
+      b2_blank.isEmpty should be (true)
+      player1.numShip should be (5)
+      player2.numShip should be(0)
     }
 
-    "not fail on quit input" in {
-      noException should be thrownBy tui.processInputLine("quit") // Quit should not throw exceptions
-    }
-    "should ask who want to place ship on place ship input" in {
-
-    }
-
-    "process attack command correctly" in {
-
+    " place ship correctly with correct input" in {
+      val input = "place ship Alice 2 0 0 h"
+      tui.processInputLine(input)
+      b1.cells.cells(0)(0) should be (Cell(O))
+      b1.cells.cells(0)(1) should be (Cell(Value.O))
     }
 
-    "call solver and declare a winner on check input" in {
+    " do nothing if place ship input is incorrect" in {
+      val input = "place ship Alice 2 0 h"
+      tui.processInputLine(input)
+    }
+
+    " not place ship if the ship size is not valid" in {
+      val input = "place ship Alice 7 0 0 h"
+      tui.processInputLine(input)
+    }
+
+    " not place ship if player has no ship left" in {
+      val input = "place ship Bob 2 0 0 h"
+      tui.processInputLine(input)
+    }
+
+    " attack ship with correct input (on hit)" in {
+      controller.placeShips("Alice", 2, 1, 1, "h")
+      val input = "attack Bob 1 1"
+      tui.processInputLine(input)
+      b2_blank.cells.cells(1)(1) should be (Cell(O))
+    }
+    " attack ship with correct input (on miss)" in {
+      val input = "attack Bob 2 2"
+      tui.processInputLine(input)
+      b2_blank.cells.cells(2)(2) should be(Cell(X))
+    }
+
+    " not attack if the attack input is incorrect" in {
+      val input = "attack Bob"
+      tui.processInputLine(input)
+    }
+
+    " check when input is check (Bob won the game)" in {
+      controller.clean()
+      controller.placeShips("Alice", 2, 1, 1, "h")
+      controller.attack(1, 1, "Alice")
+      controller.attack(1, 2, "Alice")
+
+      controller.boardShow("Alice")
       tui.processInputLine("check")
-      // Check that the solver was called and that the output reflects a winner
-      testController.solver() should be (1) // Player 1 should win
+      controller.solver() should be (1)
     }
-  }
+    " check when input is check (Game not finish)" in {
+      controller.clean()
+      tui.processInputLine("check")
+      controller.solver() should be (3)
+    }
+
+    }
 }

@@ -18,62 +18,60 @@ class tui(controller : Controller) extends Observer {
 
       case "quit" =>
 
-      case "place ship" =>
-        println(s"Who gets to place ships first, ${controller.getNamePlayer1} or ${controller.getNamePlayer2}?")
-        val input = readLine().trim
+      case input if input.startsWith("place ship") =>
+        // Remove "place ship" prefix and trim the remaining input
+        val commandArgs = input.stripPrefix("place ship").trim
+        val args = commandArgs.split(" ")
+
+        // Check if we have the correct number of arguments
+        if (args.length != 5) {
+          println("Invalid input format. Please enter: <player_name> <ship_size> <x> <y> <direction>")
+          println("Example: place ship Player1 3 5 7 h")
+          return
+        }
+
+        // Extract arguments
+        val Array(name, shipSizeStr, poxStr, poyStr, direction) = args
 
         // Validate player name
-        val name = if (input == controller.getNamePlayer1) {
-          controller.getNamePlayer1
-        } else if (input == controller.getNamePlayer2) {
-          controller.getNamePlayer2
-        } else {
+        if (name != controller.getNamePlayer1 && name != controller.getNamePlayer2) {
           println("Unknown player name. Please enter a valid name.")
+          return
+        }
+
+        // Validate and parse ship size
+        val shipSize = shipSizeStr match {
+          case "2" => 2
+          case "3" => 3
+          case "4" => 4
+          case "5" => 5
+          case _ =>
+            println("Invalid ship size. Please enter one of: 2, 3, 4, 5")
+            return
+        }
+
+        // Validate and parse x and y coordinates
+        val pox = scala.util.Try(poxStr.toInt).getOrElse({
+          println("Invalid x coordinate. Please enter a valid number.")
+          return
+        })
+
+        val poy = scala.util.Try(poyStr.toInt).getOrElse({
+          println("Invalid y coordinate. Please enter a valid number.")
+          return
+        })
+
+        // Validate direction
+        val dir = direction.toLowerCase
+        if (dir != "h" && dir != "v") {
+          println("Invalid direction. Please enter 'h' for horizontal or 'v' for vertical.")
           return
         }
 
         // Check if player has ships left to place
         if (controller.getNumShip(name) > 0) {
-          println("Which ship do you want to place?")
-          println("Choose from: 2er, 3er, 4er, 5er")
-
-          val ship = readLine().trim.toLowerCase
-          val shipSize = ship match {
-            case "2er" => 2
-            case "3er" => 3
-            case "4er" => 4
-            case "5er" => 5
-            case _ =>
-              println("Invalid ship size. Please enter one of: 2er, 3er, 4er, 5er")
-              return
-          }
-
-          // Show the board for the player
-          controller.showMe()
-
-          // Get the x and y position
-          println("Enter the x coordinate for the ship:")
-          val pox = scala.util.Try(readInt()).getOrElse({
-            println("Invalid x coordinate. Please enter a number.")
-            return
-          })
-
-          println("Enter the y coordinate for the ship:")
-          val poy = scala.util.Try(readInt()).getOrElse({
-            println("Invalid y coordinate. Please enter a number.")
-            return
-          })
-
-          // Get the direction
-          println("Place ship horizontally (h) or vertically (v)?")
-          val direction = readLine().trim.toLowerCase
-          if (direction != "h" && direction != "v") {
-            println("Invalid direction. Please enter 'h' for horizontal or 'v' for vertical.")
-            return
-          }
-
           // Attempt to place the ship
-          val placementSuccess = controller.placeShips(name, shipSize, pox, poy, direction)
+          val placementSuccess = controller.placeShips(name, shipSize, pox, poy, dir)
           if (placementSuccess) {
             println(s"Ship of size $shipSize placed successfully for player $name.")
           } else {
@@ -83,34 +81,49 @@ class tui(controller : Controller) extends Observer {
           println(s"$name, you've already placed all your ships.")
         }
 
-        // Display the board after the attempted placement
-        controller.boardShow(name)
+      case input if input.startsWith("attack") =>
+        // Remove "attack" prefix and trim the remaining input
+        val commandArgs = input.stripPrefix("attack").trim
+        val args = commandArgs.split(" ")
 
-      case "attack" =>
-        print("Who attacks? " + controller.getNamePlayer1 + " or " + controller.getNamePlayer2 + "?\n")
-        val input = readLine()
-
-        if (input == controller.getNamePlayer1 || input == controller.getNamePlayer2) {
-          val attacker = if (input == controller.getNamePlayer1) controller.getNamePlayer1 else controller.getNamePlayer2
-          val defender = if (input == controller.getNamePlayer1) controller.getNamePlayer2 else controller.getNamePlayer1
-          performAttack(attacker, defender)
-        } else {
-          print("Invalid input. Please enter a valid player name.\n")
+        // Check if we have the correct number of arguments
+        if (args.length != 3) {
+          println("Invalid input format. Please enter: <attacker_name> <x> <y>")
+          println("Example: attack Player1 5 7")
+          return
         }
-        def performAttack(attacker: String, defender: String): Unit = {
-          print(attacker + " attacks " + defender + "!\n")
-          controller.blankBoardShow(attacker)
-          print("\n")
-          print("Attack position x: \n")
-          val pox = readInt()
-          print("Attack position y: \n")
-          val poy = readInt()
-          if (controller.attack(pox, poy, defender)) {
-            print("Hit successful at (" + pox + " , " + poy + ")\n")
-          } else {
-            print("Hit failed, miss at (" + pox + " , " + poy + ")\n")
-          }
-          controller.blankBoardShow(attacker)
+
+        // Extract arguments
+        val Array(attacker, poxStr, poyStr) = args
+
+        // Validate attacker name
+        if (attacker != controller.getNamePlayer1 && attacker != controller.getNamePlayer2) {
+          println("Unknown player name. Please enter a valid name.")
+          return
+        }
+
+        // Determine the defender based on the attacker
+        val defender = if (attacker == controller.getNamePlayer1) controller.getNamePlayer2 else controller.getNamePlayer1
+
+        // Validate and parse x and y coordinates
+        val pox = scala.util.Try(poxStr.toInt).getOrElse({
+          println("Invalid x coordinate. Please enter a valid number.")
+          return
+        })
+
+        val poy = scala.util.Try(poyStr.toInt).getOrElse({
+          println("Invalid y coordinate. Please enter a valid number.")
+          return
+        })
+
+        // Perform the attack
+        print(s"$attacker attacks $defender!\n")
+
+        // Execute the attack
+        if (controller.attack(pox, poy, defender)) {
+          print(s"Hit successful at ($pox, $poy)\n")
+        } else {
+          print(s"Hit failed, miss at ($pox, $poy)\n")
         }
 
       case "check" =>
@@ -128,5 +141,17 @@ class tui(controller : Controller) extends Observer {
         println("Input cannot be empty.")
     }
   }
-  override def update(): Unit = print("")
+  override def update(): Unit =
+    print( s"${controller.getNamePlayer1} Board: \n")
+    controller.boardShow(controller.getNamePlayer1)
+    print(s"${controller.getNamePlayer1} Blank Board: \n")
+    controller.blankBoardShow(controller.getNamePlayer1)
+
+    print( s"${controller.getNamePlayer2} Board: \n")
+    controller.boardShow(controller.getNamePlayer2)
+    print(s"${controller.getNamePlayer2} Blank Board: \n")
+    controller.blankBoardShow(controller.getNamePlayer2)
+
+    print("\n")
+    print("Status " + controller.solver() + " \n")
 }

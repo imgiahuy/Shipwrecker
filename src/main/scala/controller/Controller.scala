@@ -49,30 +49,24 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
   def solver() : Int = {
     val solver = Solver()
     if (solver.solved(b1_blank.copyBoard(), b2.copyBoard())) {
-      notifyObservers()
       2
     } else if (solver.solved(b2_blank.copyBoard(), b1.copyBoard())) {
-      notifyObservers()
       1
     } else {
-      notifyObservers()
       3
     }
   }
 
   def getNamePlayer1: String = {
-    notifyObservers()
     player1.name
   }
 
   def getNamePlayer2: String = {
-    notifyObservers()
     player2.name
   }
 
   def showMe(): Unit = {
     show.display()
-    notifyObservers()
   }
 
   def boardShow(player: String): Unit = {
@@ -82,7 +76,6 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     if (player == player2.name) {
       b2.display()
     }
-    notifyObservers()
   }
 
   def blankBoardShow(player: String): Unit = {
@@ -92,7 +85,6 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     if (player == player2.name) {
       b2_blank.display()
     }
-    notifyObservers()
   }
 
   def getNumShip(playerName: String): Int = {
