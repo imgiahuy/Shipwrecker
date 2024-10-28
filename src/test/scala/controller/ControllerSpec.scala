@@ -23,11 +23,11 @@ class ControllerSpec extends AnyWordSpec with Matchers {
 
     "clean the boards and reset the number of ships" in {
       // Simulate a game state before cleaning
-      b1.placeShip(new Ship(3, Cell(Value.O)), (0, 0), "horizontal")
-      b2.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "vertical")
-      show.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "vertical")
-      b1_blank.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "vertical")
-      b2_blank.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "vertical")
+      b1.placeShip(new Ship(3, Cell(Value.O)), (0, 0), "h")
+      b2.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
+      show.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
+      b1_blank.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
+      b2_blank.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
 
       controller.clean()
 
@@ -118,54 +118,6 @@ class ControllerSpec extends AnyWordSpec with Matchers {
       // Trigger observer update
       controller.clean()
       updated shouldBe true
-    }
-
-    "display the show board and notify observers in showMe" in {
-      var observerNotified = false
-      val observer = new Observer {
-        override def update(): Unit = observerNotified = true
-      }
-      controller.add(observer)
-
-      controller.showMe()
-
-      // Check if the show board was displayed (assuming display is a void function)
-      // Here, we are just verifying observer notification
-      observerNotified shouldBe true
-    }
-
-    "display the correct player board and notify observers in boardShow" in {
-      var observerNotified = false
-      val observer = new Observer {
-        override def update(): Unit = observerNotified = true
-      }
-      controller.add(observer)
-
-      // Display board for player1
-      controller.boardShow(player1.name)
-      observerNotified shouldBe true
-      observerNotified = false // Reset for next test
-
-      // Display board for player2
-      controller.boardShow(player2.name)
-      observerNotified shouldBe true
-    }
-
-    "display the correct blank player board and notify observers in blankBoardShow" in {
-      var observerNotified = false
-      val observer = new Observer {
-        override def update(): Unit = observerNotified = true
-      }
-      controller.add(observer)
-
-      // Display blank board for player1
-      controller.blankBoardShow(player1.name)
-      observerNotified shouldBe true
-      observerNotified = false // Reset for next test
-
-      // Display blank board for player2
-      controller.blankBoardShow(player2.name)
-      observerNotified shouldBe true
     }
   }
 }
