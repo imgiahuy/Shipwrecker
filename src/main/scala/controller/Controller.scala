@@ -46,11 +46,6 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     placementSuccess
   }
 
-  def createBoard(size : Int): Unit = {
-    val game = new GameBoard(size)
-    notifyObservers()
-  }
-
   def solver() : Int = {
     val solver = Solver()
     if (solver.solved(b1_blank.copyBoard(), b2.copyBoard())) {
