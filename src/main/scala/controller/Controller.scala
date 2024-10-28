@@ -1,40 +1,49 @@
 package controller
 
 import util.Observable
-import model._
+import model.*
+import model.Value.O
 
 class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBoard, b2_blank: GameBoard,
                  player1: Player, player2: Player) extends Observable {
-
+  
+  private var remainingShips: Map[String, Int] = Map(
+    player1.name -> player1.numShip,
+    player2.name -> player2.numShip
+  )
+  
   def clean(): Unit = {
     b1.clean()
     b2.clean()
     show.clean()
     b1_blank.clean()
     b2_blank.clean()
+    remainingShips = Map(
+      player1.name -> player1.numShip,
+      player2.name -> player2.numShip
+    )
     notifyObservers()
   }
 
-  def placeShips(playerName: String, numShip : Int, pox: Int, poy: Int, richtung: String): Boolean = {
-    val board = if (playerName == player1.name) {
-      b1
-    } else if (playerName == player2.name) {
-      b2
-    } else {
-      throw new IllegalArgumentException("Unknown player name")
+  def placeShips(playerName: String, shipSize: Int, pox: Int, poy: Int, direction: String): Boolean = {
+    val (board, player) = playerName match {
+      case name if name == player1.name => (b1, player1)
+      case name if name == player2.name => (b2, player2)
+      case _ => throw new IllegalArgumentException("Unknown player name")
     }
-    if (board.placeShip(new Ship(numShip, Cell(numShip)), (pox, poy), richtung) != 0) {
-      notifyObservers()
-      true
+
+    // Try placing the ship on the board
+    val placementSuccess = if (shipSize >= 2 && shipSize <= 5) {
+      board.placeShip(new Ship(shipSize, Cell(O)), (pox, poy), direction) != 0
     } else {
-      notifyObservers()
       false
     }
-  }
-
-  def createBoard(size : Int): Unit = {
-    val game = new GameBoard(size)
-    notifyObservers()
+    
+    if (placementSuccess) {
+      remainingShips = remainingShips.updated(player.name, remainingShips(player.name) - 1)
+      notifyObservers()
+    }
+    placementSuccess
   }
 
   def solver() : Int = {
@@ -86,14 +95,8 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     notifyObservers()
   }
 
-  def getNumShip(player : String): Int = {
-    if (player == player1.name) {
-      player1.numShip
-    } else if (player == player2.name) {
-      player2.numShip
-    } else {
-      0
-    }
+  def getNumShip(playerName: String): Int = {
+    remainingShips.getOrElse(playerName, 0)
   }
 
   def attack(pox: Int, poy: Int, player: String): Boolean = {
@@ -105,11 +108,11 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
       throw new IllegalArgumentException("Unknown player name")
     }
     if(oppBord.hit(pox,poy)) {
-      myBoard.cells.replace(pox, poy, Cell(1))
+      myBoard.cells.replace(pox, poy, Cell(Value.O))
       notifyObservers()
       true
     } else {
-      myBoard.cells.replace(pox, poy, Cell(9))
+      myBoard.cells.replace(pox, poy, Cell(Value.X))
       notifyObservers()
       false
     }

@@ -1,6 +1,7 @@
 package model
 
 import model.Cell
+import model.Value.{O, X, ☐}
 import org.scalatest.matchers.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -8,15 +9,17 @@ import org.scalatest.wordspec.AnyWordSpec
 class CellSpec extends AnyWordSpec with Matchers {
   "A Cell" when {
     "not set to any value" should {
-      val emptyCell = Cell(0)
-      "have value 0" in {
-        emptyCell.value should be(0)
+      val emptyCell = Cell(☐)
+      "have value ☐" in {
+        emptyCell.value should be(☐)
       }
     }
     "set to a specific value" should {
-      val nonEmptyCell = Cell(1)
+      val nonEmptyCell = Cell(O)
+      val nonEmptyCell_1 = Cell(X)
       "the return value" in {
-        nonEmptyCell.value should be(1)
+        nonEmptyCell.value should be(O)
+        nonEmptyCell_1.value should be(X)
       }
     }
   }
