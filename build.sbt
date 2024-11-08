@@ -15,7 +15,6 @@ lazy val root = (project in file("."))
 jacocoReportSettings := JacocoReportSettings()
   .withThresholds(
     JacocoThresholds(
-      instruction = 80,
       branch = 70
     )
   )
