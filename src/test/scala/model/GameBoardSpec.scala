@@ -24,8 +24,8 @@ class GameBoardSpec extends AnyWordSpec with Matchers {
       val ship = SimpleShipFactory().createShip(6)
       val ship2 = SimpleShipFactory().createShip(-1)
       val gameBoard = new GameBoard(5)
-      gameBoard.placeShip(ship,(1,1), "h") should be(0)
-      gameBoard.placeShip(ship2, (1,1), "h") should be(0)
+      gameBoard.placeShip(ship,(1,1), "h") should be(false)
+      gameBoard.placeShip(ship2, (1,1), "h") should be(false)
     }
 
     "place a ship vertically on the board" in {
@@ -51,7 +51,7 @@ class GameBoardSpec extends AnyWordSpec with Matchers {
       gameBoard.placeShip(ship1, (1, 1), richtung = "h")
 
       val ship2 = new SimpleShipFactory().createShip(2)
-      gameBoard.placeShip(ship2, (1, 1), richtung = "h") shouldEqual 0 // Ship should not be placed
+      gameBoard.placeShip(ship2, (1, 1), richtung = "h") should be (false) // Ship should not be placed
     }
 
     "hit a ship and mark it as hit" in {

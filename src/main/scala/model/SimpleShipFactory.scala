@@ -10,8 +10,10 @@ class SimpleShipFactory extends ShipFactory {
       new SimpleShip_4
     } else if (size == 3) {
       new SimpleShip_3
-    } else {
+    } else if (size == 2) {
       new SimpleShip_2
+    } else {
+      null
     }
   }
 }

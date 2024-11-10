@@ -1,30 +1,28 @@
 package model
-
 import model.Value.{O, X, ☐}
-
 import scala.reflect.ClassTag
 
 case class GameBoard(cells: Board[Cell]) {
   
   def this(size: Int) = this(new Board[Cell](size, Cell(☐)))
 
-  def placeShip(ship: Ship, where: (Int, Int), richtung: String): Int = {
-    if (ship.sizeOf() < 0 || ship.sizeOf() > 5) {
-      0
+  def placeShip(ship: Ship, where: (Int, Int), richtung: String): Boolean = {
+    if (ship == null) {
+      false
     } else if (cells.cells(where._1)(where._2) != Cell(Value.☐)) {//and at x,y == Cell(9)
-      0
+      false
     } else {
       val (dx, dy) = richtung match {
         case "v" => (1, 0)
         case "h" => (0, 1)
-        case _ => return 0  // invalid direction
+        case _ => return false  // invalid direction
       }
       for (i <- 0 until ship.sizeOf()) {
         val x = where._1 + i * dx
         val y = where._2 + i * dy
         cells.replace(x, y, Cell(Value.O))
       }
-      ship.sizeOf()
+      true
     }
   }
 

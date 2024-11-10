@@ -1,5 +1,4 @@
 package model
-
 import scala.reflect.ClassTag
 
 case class Board[Cell : ClassTag](cells : Array[Array[Cell]]) {

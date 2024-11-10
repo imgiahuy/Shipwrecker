@@ -35,7 +35,7 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
 
     // Try placing the ship on the board
     val placementSuccess = if (shipSize >= 2 && shipSize <= 5) {
-      board.placeShip(SimpleShipFactory().createShip(shipSize), (pox, poy), direction) != 0
+      board.placeShip(SimpleShipFactory().createShip(shipSize), (pox, poy), direction)
     } else {
       false
     }

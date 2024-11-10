@@ -84,12 +84,12 @@ class TuiSpec  extends AnyWordSpec with Matchers {
 
       controller.boardShow("Alice")
       tui.processInputLine("check")
-      controller.solver() should be (1)
+      controller.solver() should be (State.PLAYER_2_WIN)
     }
     " check when input is check (Game not finish)" in {
       controller.clean()
       tui.processInputLine("check")
-      controller.solver() should be (3)
+      controller.solver() should be (State.CONTINUE)
     }
 
     }
