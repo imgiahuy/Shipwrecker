@@ -2,6 +2,7 @@ package controller
 
 import util.Observable
 import model.*
+import model.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
 import model.Value.O
 
 class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBoard, b2_blank: GameBoard,
@@ -34,7 +35,7 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
 
     // Try placing the ship on the board
     val placementSuccess = if (shipSize >= 2 && shipSize <= 5) {
-      board.placeShip(new Ship(shipSize, Cell(O)), (pox, poy), direction) != 0
+      board.placeShip(SimpleShipFactory().createShip(shipSize), (pox, poy), direction) != 0
     } else {
       false
     }
@@ -46,14 +47,14 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     placementSuccess
   }
 
-  def solver() : Int = {
+  def solver(): State = {
     val solver = Solver()
     if (solver.solved(b1_blank.copyBoard(), b2.copyBoard())) {
-      2
+      PLAYER_1_WIN
     } else if (solver.solved(b2_blank.copyBoard(), b1.copyBoard())) {
-      1
+      PLAYER_2_WIN
     } else {
-      3
+      CONTINUE
     }
   }
 
@@ -92,6 +93,7 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
   }
 
   def attack(pox: Int, poy: Int, player: String): Boolean = {
+    //player 1 attack player 2
     val (oppBord, myBoard) = if (player == player1.name) {
       (b1, b2_blank)
     } else if (player == player2.name) {

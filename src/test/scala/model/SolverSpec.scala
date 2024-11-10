@@ -33,7 +33,7 @@ class SolverSpec extends AnyWordSpec with Matchers {
     "return false for boards with different values" in {
       val board1 = new GameBoard(12)
       val board2 = new GameBoard(12)
-      val ship = new Ship(3, Cell(O))
+      val ship = SimpleShipFactory().createShip(3)
       board2.placeShip(ship, (1, 1), "h")
 
       val solver = Solver()

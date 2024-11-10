@@ -128,15 +128,8 @@ class tui(controller : Controller) extends Observer {
 
       case "check" =>
         val check = controller.solver()
-        if(check == 1) {
-          print("Game finish!!!\n")
-          print(controller.getNamePlayer2 + " has won the game.\n")
-        } else if (check == 2) {
-          print("Game finish!!!\n")
-          print(controller.getNamePlayer1 + " has won the game.\n")
-        } else {
-          print("Game not finish!!!")
-        }
+        print(s"${check.statement} \n")
+
       case "" =>
         println("Input cannot be empty.")
     }

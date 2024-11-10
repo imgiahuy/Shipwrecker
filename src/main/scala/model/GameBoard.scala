@@ -5,6 +5,7 @@ import model.Value.{O, X, ☐}
 import scala.reflect.ClassTag
 
 case class GameBoard(cells: Board[Cell]) {
+  
   def this(size: Int) = this(new Board[Cell](size, Cell(☐)))
 
   def placeShip(ship: Ship, where: (Int, Int), richtung: String): Int = {

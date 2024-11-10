@@ -23,11 +23,11 @@ class ControllerSpec extends AnyWordSpec with Matchers {
 
     "clean the boards and reset the number of ships" in {
       // Simulate a game state before cleaning
-      b1.placeShip(new Ship(3, Cell(Value.O)), (0, 0), "h")
-      b2.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
-      show.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
-      b1_blank.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
-      b2_blank.placeShip(new Ship(4, Cell(Value.O)), (2, 2), "v")
+      b1.placeShip(SimpleShipFactory().createShip(2), (0, 0), "h")
+      b2.placeShip(SimpleShipFactory().createShip(4), (2, 2), "v")
+      show.placeShip(SimpleShipFactory().createShip(5), (2, 2), "v")
+      b1_blank.placeShip(SimpleShipFactory().createShip(2), (2, 2), "v")
+      b2_blank.placeShip(SimpleShipFactory().createShip(3), (2, 2), "v")
 
       controller.clean()
 
@@ -92,20 +92,20 @@ class ControllerSpec extends AnyWordSpec with Matchers {
     }
 
     "handle attacks on hit" in {
-      b1.placeShip(new Ship(3, Cell(Value.O)), (0, 0), "h")
+      b1.placeShip(SimpleShipFactory().createShip(2), (0, 0), "h")
       val result = controller.attack(0, 0, player1.name)
       result should be(true)
     }
 
     "handle board on hit" in {
-      b1.placeShip(new Ship(3, Cell(Value.O)), (0, 0), "h")
+      b1.placeShip(SimpleShipFactory().createShip(3), (0, 0), "h")
       val result = controller.attack(0, 0, player1.name)
       b2_blank.isEmpty should be (false)
     }
 
     "solve the game and determine the winner" in {
       val result = controller.solver()
-      result should be >= 1 // It should return 1 or 2, indicating the winning player or 3 for no win
+      result should be(State.CONTINUE) // It should return 1 or 2, indicating the winning player or 3 for no win
     }
 
     "update observers on significant events" in {
