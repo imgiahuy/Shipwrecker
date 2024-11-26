@@ -5,6 +5,8 @@ import model.*
 import model.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
 import model.Value.O
 
+import scala.language.postfixOps
+
 class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBoard, b2_blank: GameBoard,
                  player1: Player, player2: Player) extends Observable {
   
@@ -12,7 +14,14 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     player1.name -> player1.numShip,
     player2.name -> player2.numShip
   )
-  
+
+  //to save ship coordinate
+  var downShip: Map[String, Map[model.Ship, Array[(Int, Int)]]] = Map(
+    player1.name -> Map[model.Ship, Array[(Int, Int)]](),
+    player2.name -> Map[model.Ship, Array[(Int, Int)]]()
+  )
+
+
   def clean(): Unit = {
     b1.clean()
     b2.clean()
@@ -35,7 +44,10 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
 
     // Try placing the ship on the board
     val placementSuccess = if (shipSize >= 2 && shipSize <= 5) {
-      board.placeShip(SimpleShipFactory().createShip(shipSize), (pox, poy), direction)
+      val currentShip = SimpleShipFactory().createShip(shipSize)
+      board.placeShip(currentShip, (pox, poy), direction)
+      downShip = downShip.updated(playerName, downShip(playerName) + (currentShip -> board.shipCoordinate))
+      true
     } else {
       false
     }
@@ -92,17 +104,39 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     remainingShips.getOrElse(playerName, 0)
   }
 
+  def formatDownShipForDisplay(downShip: Map[String, Map[Ship, Array[(Int, Int)]]]): String = {
+    downShip.map { case (playerName, ships) =>
+      val playerShips = if (ships.isEmpty) {
+        "  No ships placed\n."
+      } else {
+        ships.map { case (ship, coordinates) =>
+          val coordString = coordinates.map { case (x, y) => s"($x, $y)" }.mkString(", ")
+          s"  - Ship(Size: ${ship.sizeOf})"
+        }.mkString("\n")
+      }
+      s"Player: $playerName\n$playerShips"
+    }.mkString("\n\n")
+  }
+
   def attack(pox: Int, poy: Int, player: String): Boolean = {
-    //player 1 attack player 2
-    val (oppBord, myBoard) = if (player == player1.name) {
-      (b1, b2_blank)
+    val (oppBord, myBoard, opponentName) = if (player == player1.name) {
+      (b1, b2_blank, player2.name)
     } else if (player == player2.name) {
-      (b2, b1_blank)
+      (b2, b1_blank, player1.name)
     } else {
       throw new IllegalArgumentException("Unknown player name")
     }
     if(oppBord.hit(pox,poy)) {
       myBoard.cells.replace(pox, poy, Cell(Value.O))
+      downShip(opponentName).foreach { case (ship, coordinates) =>
+        if (coordinates.contains((pox, poy))) {
+          val updatedShip = ship.updateShip()
+          downShip = downShip.updated(opponentName, downShip(opponentName).updated(updatedShip, coordinates.filterNot(_ == (pox, poy))))
+            if (updatedShip.isSunk) {
+              downShip = downShip.updated(opponentName, downShip(opponentName).removed(updatedShip))
+            }
+        }
+      }
       notifyObservers()
       true
     } else {

@@ -125,6 +125,7 @@ class tui(controller : Controller) extends Observer {
         } else {
           print(s"Hit failed, miss at ($pox, $poy)\n")
         }
+        print(controller.formatDownShipForDisplay(controller.downShip))
 
       case "check" =>
         val check = controller.solver()

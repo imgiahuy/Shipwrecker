@@ -3,10 +3,13 @@ import model.Value.{O, X, ☐}
 import scala.reflect.ClassTag
 
 case class GameBoard(cells: Board[Cell]) {
+
+  var shipCoordinate : Array[(Int, Int)] = Array.empty[(Int, Int)]
   
   def this(size: Int) = this(new Board[Cell](size, Cell(☐)))
 
   def placeShip(ship: Ship, where: (Int, Int), richtung: String): Boolean = {
+    shipCoordinate = Array.empty[(Int, Int)]
     if (ship == null) {
       false
     } else if (cells.cells(where._1)(where._2) != Cell(Value.☐)) {//and at x,y == Cell(9)
@@ -17,9 +20,10 @@ case class GameBoard(cells: Board[Cell]) {
         case "h" => (0, 1)
         case _ => return false  // invalid direction
       }
-      for (i <- 0 until ship.sizeOf()) {
+      for (i <- 0 until ship.sizeOf) {
         val x = where._1 + i * dx
         val y = where._2 + i * dy
+        shipCoordinate :+ (x, y)
         cells.replace(x, y, Cell(Value.O))
       }
       true
@@ -49,7 +53,9 @@ case class GameBoard(cells: Board[Cell]) {
     GameBoard(newBoard)
   }
 
-  def display(): Unit = cells.display()
+  def display(): Unit = {
+    cells.display()
+  }
 
   def isEmpty: Boolean = {
     cells.cells.forall(row => row.forall(_ == Cell(Value.☐)))
