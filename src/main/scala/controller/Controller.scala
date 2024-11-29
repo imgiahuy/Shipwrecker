@@ -1,17 +1,19 @@
 package controller
 
-import util.Observable
+import util.{Observable, UndoManager}
 import model.*
 import model.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
 import model.Value.O
 
-class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBoard, b2_blank: GameBoard,
-                 player1: Player, player2: Player) extends Observable {
+class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var b1_blank: GameBoard, var b2_blank: GameBoard,
+                 var player1: Player, var player2: Player) extends Observable {
   
   private var remainingShips: Map[String, Int] = Map(
     player1.name -> player1.numShip,
     player2.name -> player2.numShip
   )
+
+  private val undoManager = new UndoManager
   
   def clean(): Unit = {
     b1.clean()
@@ -23,28 +25,12 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
       player1.name -> player1.numShip,
       player2.name -> player2.numShip
     )
-    notifyObservers()
+    notifyObservers
   }
 
-  def placeShips(playerName: String, shipSize: Int, pox: Int, poy: Int, direction: String): Boolean = {
-    val (board, player) = playerName match {
-      case name if name == player1.name => (b1, player1)
-      case name if name == player2.name => (b2, player2)
-      case _ => throw new IllegalArgumentException("Unknown player name")
-    }
-
-    // Try placing the ship on the board
-    val placementSuccess = if (shipSize >= 2 && shipSize <= 5) {
-      board.placeShip(SimpleShipFactory().createShip(shipSize), (pox, poy), direction)
-    } else {
-      false
-    }
-    
-    if (placementSuccess) {
-      remainingShips = remainingShips.updated(player.name, remainingShips(player.name) - 1)
-      notifyObservers()
-    }
-    placementSuccess
+  def placeShips(player: Player, shipSize: Int, pox: Int, poy: Int, direction: String): Unit = {
+    undoManager.doStep(new PlaceShipCommand(player, shipSize, pox, poy, direction , this))
+    notifyObservers
   }
 
   def solver(): State = {
@@ -103,12 +89,22 @@ class Controller(b1: GameBoard, b2: GameBoard, show: GameBoard, b1_blank: GameBo
     }
     if(oppBord.hit(pox,poy)) {
       myBoard.cells.replace(pox, poy, Cell(Value.O))
-      notifyObservers()
+      notifyObservers
       true
     } else {
       myBoard.cells.replace(pox, poy, Cell(Value.X))
-      notifyObservers()
+      notifyObservers
       false
     }
+  }
+
+  def undo: Unit = {
+    undoManager.undoStep
+    notifyObservers
+  }
+
+  def redo: Unit = {
+    undoManager.redoStep
+    notifyObservers
   }
 }

@@ -1,150 +1,157 @@
 package aview
+
 import controller.Controller
 import util.Observer
 
-import scala.io.StdIn.*
+import scala.io.StdIn._
 
-class tui(controller : Controller) extends Observer {
+class tui(controller: Controller) extends Observer {
 
   controller.add(this)
 
-  val size = 12
-
-
   def processInputLine(input: String): Unit = {
-
     input match {
-      case "new game" => controller.clean()
+      case "new game" =>
+        controller.clean()
+        println("New game started!")
 
       case "quit" =>
+        println("Game ended. Goodbye!")
 
       case input if input.startsWith("place ship") =>
-        // Remove "place ship" prefix and trim the remaining input
-        val commandArgs = input.stripPrefix("place ship").trim
-        val args = commandArgs.split(" ")
-
-        // Check if we have the correct number of arguments
-        if (args.length != 5) {
-          println("Invalid input format. Please enter: <player_name> <ship_size> <x> <y> <direction>")
-          println("Example: place ship Player1 3 5 7 h")
-          return
-        }
-
-        // Extract arguments
-        val Array(name, shipSizeStr, poxStr, poyStr, direction) = args
-
-        // Validate player name
-        if (name != controller.getNamePlayer1 && name != controller.getNamePlayer2) {
-          println("Unknown player name. Please enter a valid name.")
-          return
-        }
-
-        // Validate and parse ship size
-        val shipSize = shipSizeStr match {
-          case "2" => 2
-          case "3" => 3
-          case "4" => 4
-          case "5" => 5
-          case _ =>
-            println("Invalid ship size. Please enter one of: 2, 3, 4, 5")
-            return
-        }
-
-        // Validate and parse x and y coordinates
-        val pox = scala.util.Try(poxStr.toInt).getOrElse({
-          println("Invalid x coordinate. Please enter a valid number.")
-          return
-        })
-
-        val poy = scala.util.Try(poyStr.toInt).getOrElse({
-          println("Invalid y coordinate. Please enter a valid number.")
-          return
-        })
-
-        // Validate direction
-        val dir = direction.toLowerCase
-        if (dir != "h" && dir != "v") {
-          println("Invalid direction. Please enter 'h' for horizontal or 'v' for vertical.")
-          return
-        }
-
-        // Check if player has ships left to place
-        if (controller.getNumShip(name) > 0) {
-          // Attempt to place the ship
-          val placementSuccess = controller.placeShips(name, shipSize, pox, poy, dir)
-          if (placementSuccess) {
-            println(s"Ship of size $shipSize placed successfully for player $name.")
-          } else {
-            println("Failed to place the ship. The position might be occupied or invalid.")
-          }
-        } else {
-          println(s"$name, you've already placed all your ships.")
-        }
+        processPlaceShip(input.stripPrefix("place ship").trim)
+        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.player1.numShip}")
+        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.player2.numShip}")
 
       case input if input.startsWith("attack") =>
-        // Remove "attack" prefix and trim the remaining input
-        val commandArgs = input.stripPrefix("attack").trim
-        val args = commandArgs.split(" ")
-
-        // Check if we have the correct number of arguments
-        if (args.length != 3) {
-          println("Invalid input format. Please enter: <attacker_name> <x> <y>")
-          println("Example: attack Player1 5 7")
-          return
-        }
-
-        // Extract arguments
-        val Array(attacker, poxStr, poyStr) = args
-
-        // Validate attacker name
-        if (attacker != controller.getNamePlayer1 && attacker != controller.getNamePlayer2) {
-          println("Unknown player name. Please enter a valid name.")
-          return
-        }
-
-        // Determine the defender based on the attacker
-        val defender = if (attacker == controller.getNamePlayer1) controller.getNamePlayer2 else controller.getNamePlayer1
-
-        // Validate and parse x and y coordinates
-        val pox = scala.util.Try(poxStr.toInt).getOrElse({
-          println("Invalid x coordinate. Please enter a valid number.")
-          return
-        })
-
-        val poy = scala.util.Try(poyStr.toInt).getOrElse({
-          println("Invalid y coordinate. Please enter a valid number.")
-          return
-        })
-
-        // Perform the attack
-        print(s"$attacker attacks $defender!\n")
-
-        // Execute the attack
-        if (controller.attack(pox, poy, defender)) {
-          print(s"Hit successful at ($pox, $poy)\n")
-        } else {
-          print(s"Hit failed, miss at ($pox, $poy)\n")
-        }
+        processAttack(input.stripPrefix("attack").trim)
 
       case "check" =>
         val check = controller.solver()
-        print(s"${check.statement} \n")
+        println(s"Check: ${check.statement}")
+
+      case "undo" =>
+        controller.undo
+        println("Undo successful.")
+        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.player1.numShip}")
+        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.player2.numShip}")
+
+      case "redo" =>
+        controller.redo
+        println("Redo successful.")
 
       case "" =>
         println("Input cannot be empty.")
+
+      case _ =>
+        println("Unknown command. Please try again.")
     }
   }
-  override def update(): Unit =
-    print( s"${controller.getNamePlayer1} Board: \n")
+
+  private def processPlaceShip(commandArgs: String): Unit = {
+    val args = commandArgs.split(" ")
+
+    if (args.length != 5) {
+      println("Invalid input format. Use: place ship <player_name> <ship_size> <x> <y> <direction>")
+      println("Example: place ship Player1 3 5 7 h")
+      return
+    }
+
+    val Array(playerName, shipSizeStr, poxStr, poyStr, direction) = args
+
+    // Validate player name
+    val player = if (playerName == controller.getNamePlayer1) {
+      controller.player1
+    } else if (playerName == controller.getNamePlayer2) {
+      controller.player2
+    } else {
+      println(s"Unknown player: $playerName. Please enter a valid name.")
+      return
+    }
+
+    // Validate ship size
+    val shipSize = shipSizeStr.toIntOption match {
+      case Some(size) if size >= 2 && size <= 5 => size
+      case _ =>
+        println("Invalid ship size. Use one of: 2, 3, 4, 5")
+        return
+    }
+
+    // Validate coordinates
+    val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
+      case (Some(x), Some(y)) => (x, y)
+      case _ =>
+        println("Invalid coordinates. Ensure both x and y are integers.")
+        return
+    }
+
+    // Validate direction
+    val dir = direction.toLowerCase
+    if (dir != "h" && dir != "v") {
+      println("Invalid direction. Use 'h' for horizontal or 'v' for vertical.")
+      return
+    }
+
+    // Check if the player can place a ship
+    if (player.numShip > 0) {
+      // Place the ship
+      controller.placeShips(player, shipSize, pox, poy, dir)
+      println(s"Ship of size $shipSize placed successfully for player $playerName.")
+    } else {
+      println(s"$playerName, you've already placed all your ships.")
+    }
+  }
+
+  private def processAttack(commandArgs: String): Unit = {
+    val args = commandArgs.split(" ")
+
+    if (args.length != 3) {
+      println("Invalid input format. Use: attack <attacker_name> <x> <y>")
+      println("Example: attack Player1 5 7")
+      return
+    }
+
+    val Array(attackerName, poxStr, poyStr) = args
+
+    // Validate attacker name
+    val (attacker, defender) = if (attackerName == controller.getNamePlayer1) {
+      (controller.player1, controller.player2)
+    } else if (attackerName == controller.getNamePlayer2) {
+      (controller.player2, controller.player1)
+    } else {
+      println(s"Unknown attacker: $attackerName. Please enter a valid name.")
+      return
+    }
+
+    // Validate coordinates
+    val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
+      case (Some(x), Some(y)) => (x, y)
+      case _ =>
+        println("Invalid coordinates. Ensure both x and y are integers.")
+        return
+    }
+
+    // Perform the attack
+    println(s"$attackerName attacks ${defender.name} at ($pox, $poy)!")
+    if (controller.attack(pox, poy, defender.name)) {
+      println(s"Hit successful at ($pox, $poy)!")
+    } else {
+      println(s"Missed at ($pox, $poy).")
+    }
+  }
+
+  override def update(): Unit = {
+    println(s"${controller.getNamePlayer1} Board:")
     controller.boardShow(controller.getNamePlayer1)
-    print(s"${controller.getNamePlayer1} Blank Board: \n")
+    println(s"${controller.getNamePlayer1} Blank Board:")
     controller.blankBoardShow(controller.getNamePlayer1)
 
-    print( s"${controller.getNamePlayer2} Board: \n")
+    println(s"${controller.getNamePlayer2} Board:")
     controller.boardShow(controller.getNamePlayer2)
-    print(s"${controller.getNamePlayer2} Blank Board: \n")
+    println(s"${controller.getNamePlayer2} Blank Board:")
     controller.blankBoardShow(controller.getNamePlayer2)
 
-    print("\n")
-    print("Status " + controller.solver() + " \n")
+    println("\n")
+    println(s"Status: ${controller.solver()}")
+  }
 }

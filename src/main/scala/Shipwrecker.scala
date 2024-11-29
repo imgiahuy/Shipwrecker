@@ -5,7 +5,7 @@ import controller.Controller
 import scala.io.StdIn.readLine
 
 object Shipwrecker {
-  val shipNumber = 5
+  val shipNumber = 2
   var board_pl1 = new GameBoard(12)
   var board_pl1_blk = new GameBoard(12)
   var board_pl2 = new GameBoard(12)
