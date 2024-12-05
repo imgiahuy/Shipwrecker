@@ -1,22 +1,19 @@
 package aview
 
-import controller.Controller
+import controller.{Controller, GameState}
+import model.State.CONTINUE
 import util.Observer
 
-import scala.io.StdIn._
+import scala.io.StdIn.*
 
-class tui(controller: Controller) extends Observer {
+class tui (controller: Controller) extends TuiTemplate(controller) {
 
-  controller.add(this)
-
-  def processInputLine(input: String): Unit = {
-    input match {
+  // Implement the command handling logic
+  override def handleCommand(command: String): Unit = {
+    command match {
       case "new game" =>
         controller.clean()
         println("New game started!")
-
-      case "quit" =>
-        println("Game ended. Goodbye!")
 
       case input if input.startsWith("place ship") =>
         processPlaceShip(input.stripPrefix("place ship").trim)
@@ -25,10 +22,6 @@ class tui(controller: Controller) extends Observer {
 
       case input if input.startsWith("attack") =>
         processAttack(input.stripPrefix("attack").trim)
-
-      case "check" =>
-        val check = controller.solver()
-        println(s"Check: ${check.statement}")
 
       case "undo" =>
         controller.undo
@@ -40,8 +33,8 @@ class tui(controller: Controller) extends Observer {
         controller.redo
         println("Redo successful.")
 
-      case "" =>
-        println("Input cannot be empty.")
+      case "check" =>
+        val check = controller.solver()
 
       case _ =>
         println("Unknown command. Please try again.")
@@ -77,7 +70,6 @@ class tui(controller: Controller) extends Observer {
         return
     }
 
-    // Validate coordinates
     val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
       case (Some(x), Some(y)) => (x, y)
       case _ =>
@@ -123,7 +115,6 @@ class tui(controller: Controller) extends Observer {
       return
     }
 
-    // Validate coordinates
     val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
       case (Some(x), Some(y)) => (x, y)
       case _ =>
@@ -133,25 +124,6 @@ class tui(controller: Controller) extends Observer {
 
     // Perform the attack
     println(s"$attackerName attacks ${defender.name} at ($pox, $poy)!")
-    if (controller.attack(pox, poy, defender.name)) {
-      println(s"Hit successful at ($pox, $poy)!")
-    } else {
-      println(s"Missed at ($pox, $poy).")
-    }
-  }
-
-  override def update(): Unit = {
-    println(s"${controller.getNamePlayer1} Board:")
-    controller.boardShow(controller.getNamePlayer1)
-    println(s"${controller.getNamePlayer1} Blank Board:")
-    controller.blankBoardShow(controller.getNamePlayer1)
-
-    println(s"${controller.getNamePlayer2} Board:")
-    controller.boardShow(controller.getNamePlayer2)
-    println(s"${controller.getNamePlayer2} Blank Board:")
-    controller.blankBoardShow(controller.getNamePlayer2)
-
-    println("\n")
-    println(s"Status: ${controller.solver()}")
+    controller.attack(pox, poy, defender.name)
   }
 }

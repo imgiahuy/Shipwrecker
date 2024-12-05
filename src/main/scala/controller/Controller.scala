@@ -1,5 +1,6 @@
 package controller
 
+import controller.GameState.GameState
 import util.{Observable, UndoManager}
 import model.*
 import model.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
@@ -14,6 +15,7 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
   )
 
   private val undoManager = new UndoManager
+  var gameState: GameState = CONTINUE
   
   def clean(): Unit = {
     b1.clean()
@@ -21,6 +23,10 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
     show.clean()
     b1_blank.clean()
     b2_blank.clean()
+    player1.numShip = player1.numShip + (remainingShips(player1.name) - player1.numShip)
+    player2.numShip = player2.numShip + (remainingShips(player2.name) - player2.numShip)
+
+    // Update the remainingShips map to match
     remainingShips = Map(
       player1.name -> player1.numShip,
       player2.name -> player2.numShip
@@ -33,15 +39,9 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
     notifyObservers
   }
 
-  def solver(): State = {
-    val solver = Solver()
-    if (solver.solved(b1_blank.copyBoard(), b2.copyBoard())) {
-      PLAYER_1_WIN
-    } else if (solver.solved(b2_blank.copyBoard(), b1.copyBoard())) {
-      PLAYER_2_WIN
-    } else {
-      CONTINUE
-    }
+  def solver(): Unit = {
+    undoManager.doStep(new SolveCommand(this))
+    notifyObservers
   }
 
   def getNamePlayer1: String = {
@@ -78,24 +78,10 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
     remainingShips.getOrElse(playerName, 0)
   }
 
-  def attack(pox: Int, poy: Int, player: String): Boolean = {
-    //player 1 attack player 2
-    val (oppBord, myBoard) = if (player == player1.name) {
-      (b1, b2_blank)
-    } else if (player == player2.name) {
-      (b2, b1_blank)
-    } else {
-      throw new IllegalArgumentException("Unknown player name")
-    }
-    if(oppBord.hit(pox,poy)) {
-      myBoard.cells.replace(pox, poy, Cell(Value.O))
-      notifyObservers
-      true
-    } else {
-      myBoard.cells.replace(pox, poy, Cell(Value.X))
-      notifyObservers
-      false
-    }
+  def attack(pox: Int, poy: Int, player: String): Unit = {
+    val attacker = if (player == player1.name) player1 else player2
+    undoManager.doStep(new AttackCommand(attacker, pox, poy, this))
+    notifyObservers
   }
 
   def undo: Unit = {
