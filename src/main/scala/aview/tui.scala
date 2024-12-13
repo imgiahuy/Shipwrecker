@@ -6,7 +6,7 @@ import util.Observer
 
 import scala.io.StdIn.*
 
-class tui (controller: Controller) extends TuiTemplate(controller) {
+class tui(controller: Controller) extends TuiTemplate(controller) {
 
   // Implement the command handling logic
   override def handleCommand(command: String): Unit = {
@@ -44,13 +44,13 @@ class tui (controller: Controller) extends TuiTemplate(controller) {
   private def processPlaceShip(commandArgs: String): Unit = {
     val args = commandArgs.split(" ")
 
-    if (args.length != 5) {
-      println("Invalid input format. Use: place ship <player_name> <ship_size> <x> <y> <direction>")
-      println("Example: place ship Player1 3 5 7 h")
+    if (args.length < 3) {
+      println("Invalid input format. Use: place ship <player_name> <ship_size> <positions>")
+      println("Example: place ship Player1 3 (5,7) (5,8) (5,9)")
       return
     }
 
-    val Array(playerName, shipSizeStr, poxStr, poyStr, direction) = args
+    val Array(playerName, shipSizeStr, positionsStr @_*) = args
 
     // Validate player name
     val player = if (playerName == controller.getNamePlayer1) {
@@ -69,28 +69,26 @@ class tui (controller: Controller) extends TuiTemplate(controller) {
         println("Invalid ship size. Use one of: 2, 3, 4, 5")
         return
     }
+    // Parse positions
+    val positions = positionsStr.map(parsePosition).toList
 
-    val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
-      case (Some(x), Some(y)) => (x, y)
-      case _ =>
-        println("Invalid coordinates. Ensure both x and y are integers.")
-        return
-    }
-
-    // Validate direction
-    val dir = direction.toLowerCase
-    if (dir != "h" && dir != "v") {
-      println("Invalid direction. Use 'h' for horizontal or 'v' for vertical.")
-      return
-    }
-
-    // Check if the player can place a ship
+    // Check if the ship can be placed
     if (player.numShip > 0) {
       // Place the ship
-      controller.placeShips(player, shipSize, pox, poy, dir)
-      println(s"Ship of size $shipSize placed successfully for player $playerName.")
+      controller.placeShips(player, shipSize, positions)
     } else {
       println(s"$playerName, you've already placed all your ships.")
+    }
+  }
+
+  // Parse position string like (5,7) to (5, 7)
+  private def parsePosition(posStr: String): (Int, Int) = {
+    val pattern = """\((\d+),\s*(\d+)\)""".r
+    posStr match {
+      case pattern(x, y) => (x.toInt, y.toInt)
+      case _ =>
+        println(s"Invalid position format: $posStr. Expected format is (x, y).")
+        (-1, -1) // Invalid position
     }
   }
 

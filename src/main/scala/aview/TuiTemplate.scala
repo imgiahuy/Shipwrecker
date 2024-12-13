@@ -4,6 +4,8 @@ import controller.{Controller, GameState}
 import model.State.*
 import util.Observer
 
+import scala.concurrent.Promise
+
 abstract class TuiTemplate(controller: Controller) extends Observer {
   controller.add(this)
 
@@ -40,10 +42,13 @@ abstract class TuiTemplate(controller: Controller) extends Observer {
     controller.blankBoardShow(controller.getNamePlayer2)
   }
 
+  val guiUpdatePromise: Promise[Unit] = Promise()
+
   def showGameState(): Unit = {
     println("\n")
-    GameState.message(controller.gameState)
-    controller.gameState = CONTINUE
+    println(GameState.message(controller.gameState))
+
+    //controller.gameState = CONTINUE
   }
 }
 

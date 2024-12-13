@@ -1,9 +1,10 @@
 package controller
 
+import model.Value.O
 import model.{Cell, Player, SimpleShipFactory, Value}
 import util.Command
 
-class PlaceShipCommand(player: Player, shipSize: Int, pox: Int, poy: Int, direction: String, controller: Controller) extends Command {
+class PlaceShipCommand(player: Player, shipSize: Int, positions: List[(Int, Int)], controller: Controller) extends Command {
 
   private var previousCells: List[(Int, Int, Cell)] = List()
 
@@ -14,14 +15,14 @@ class PlaceShipCommand(player: Player, shipSize: Int, pox: Int, poy: Int, direct
 
     shipOpt match {
       case Some(ship) =>
-        previousCells = getAffectedCells(ship.sizeOf(), pox, poy, direction).map {
-          case (row, col) => (row, col, board.cells.cells(row)(col))
-        }
+        // Save the affected cells before placing the ship
+        previousCells = positions.map { case (row, col) => (row, col, board.cells.cells(row)(col)) }
 
+        // Attempt to place the ship using the new placeShip method
         if (player == controller.player1) {
-          controller.b1 = controller.b1.placeShip(player, Some(ship), (pox, poy), direction, value = Cell(Value.O))
+          controller.b1 = controller.b1.placeShip(player, Some(ship), positions, Cell(value = O))
         } else if (player == controller.player2) {
-          controller.b2 = controller.b2.placeShip(player, Some(ship), (pox, poy), direction, value = Cell(Value.O))
+          controller.b2 = controller.b2.placeShip(player, Some(ship),positions, Cell(value = O))
         }
 
       case None =>
@@ -32,6 +33,7 @@ class PlaceShipCommand(player: Player, shipSize: Int, pox: Int, poy: Int, direct
   override def undoStep: Unit = {
     val board = if (player == controller.player1) controller.b1 else controller.b2
 
+    // Restore the previous state of the affected cells
     previousCells.foreach { case (row, col, cell) =>
       board.cells.replace(row, col, cell)
     }
@@ -40,13 +42,5 @@ class PlaceShipCommand(player: Player, shipSize: Int, pox: Int, poy: Int, direct
 
   override def redoStep: Unit = {
     doStep
-  }
-
-  private def getAffectedCells(shipSize: Int, pox: Int, poy: Int, direction: String): List[(Int, Int)] = {
-    if (direction == "h") {
-      (0 until shipSize).map(i => (pox, poy + i)).toList
-    } else {
-      (0 until shipSize).map(i => (pox + i, poy)).toList
-    }
   }
 }

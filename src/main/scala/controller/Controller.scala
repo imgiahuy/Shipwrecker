@@ -6,9 +6,11 @@ import model.*
 import model.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
 import model.Value.O
 
+import scala.collection.mutable.ListBuffer
+
 class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var b1_blank: GameBoard, var b2_blank: GameBoard,
                  var player1: Player, var player2: Player) extends Observable {
-  
+
   private var remainingShips: Map[String, Int] = Map(
     player1.name -> player1.numShip,
     player2.name -> player2.numShip
@@ -16,7 +18,7 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
 
   private val undoManager = new UndoManager
   var gameState: GameState = CONTINUE
-  
+
   def clean(): Unit = {
     b1.clean()
     b2.clean()
@@ -34,8 +36,8 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
     notifyObservers
   }
 
-  def placeShips(player: Player, shipSize: Int, pox: Int, poy: Int, direction: String): Unit = {
-    undoManager.doStep(new PlaceShipCommand(player, shipSize, pox, poy, direction , this))
+  def placeShips(player: Player, shipSize: Int, positions: List[(Int, Int)]): Unit = {
+    undoManager.doStep(new PlaceShipCommand(player, shipSize, positions, this))
     notifyObservers
   }
 
@@ -92,5 +94,14 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
   def redo: Unit = {
     undoManager.redoStep
     notifyObservers
+  }
+  def getPlacedShips(player: Player): List[(Int, Int)] = {
+    val gameBoard = if (player == player1) b1 else b2
+    gameBoard.getShipPositions()
+  }
+
+  def getAttackShips(player: Player): List[(Int, Int)] = {
+    val gameBoard = if (player == player1) b1_blank else b2_blank
+    gameBoard.getAttackPositions()
   }
 }

@@ -5,12 +5,14 @@ lazy val root = (project in file("."))
   .enablePlugins(JacocoCoverallsPlugin)
   .settings(
     name := "shipwrecker",
-    libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18",
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test,
-    jacocoCoverallsServiceName := "github-actions", 
-    jacocoCoverallsBranch := sys.env.get("CI_BRANCH"),
-    jacocoCoverallsPullRequest := sys.env.get("GITHUB_EVENT_NAME"),
-    jacocoCoverallsRepoToken := sys.env.get("COVERALLS_REPO_TOKEN")
+        libraryDependencies += "org.scalafx" %% "scalafx" % "22.0.0-R33",
+        libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18",
+        libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test,
+        jacocoCoverallsServiceName := "github-actions",
+        jacocoCoverallsBranch := sys.env.get("CI_BRANCH"),
+        jacocoCoverallsPullRequest := sys.env.get("GITHUB_EVENT_NAME"),
+        jacocoCoverallsRepoToken := sys.env.get("COVERALLS_REPO_TOKEN"),
+        libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0"
 )
 jacocoReportSettings := JacocoReportSettings()
   .withThresholds(

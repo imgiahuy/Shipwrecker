@@ -2,7 +2,7 @@ package controller
 
 import model.State.*
 import model.{GameBoard, Solver}
-import util.Command
+import util.{Command, Observable}
 
 class SolveCommand (controller: Controller) extends Command {
   var momento_b1: GameBoard = controller.b1
