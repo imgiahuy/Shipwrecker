@@ -1,7 +1,9 @@
 package model
 
 import model.*
-import model.Value.*
+import model.GameboardComponent.GameBaseImpl.{Cell, GameBoard, Value}
+import Value.*
+import model.GameboardComponent.GameBaseImpl.shipModel.SimpleShipFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

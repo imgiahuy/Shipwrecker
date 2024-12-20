@@ -1,7 +1,7 @@
 package model
 
-import model.Cell
-import model.Value.{O, X, ☐}
+import model.GameboardComponent.GameBaseImpl.Cell
+import model.GameboardComponent.GameBaseImpl.Value.{O, X, ☐}
 import org.scalatest.matchers.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

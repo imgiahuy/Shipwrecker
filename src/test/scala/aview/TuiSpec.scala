@@ -1,7 +1,10 @@
 package aview
 import controller.*
 import model.*
-import model.Value.{O, X}
+import model.GameboardComponent.GameBaseImpl.{Cell, GameBoard, State, Value}
+import model.PlayerComponent.Player
+import Value.{O, X}
+import controller.ControllerComponent.controllerBaseImpl.Controller
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

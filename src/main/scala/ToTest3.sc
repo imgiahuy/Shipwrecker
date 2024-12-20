@@ -1,5 +1,5 @@
-import model.Cell
 
+import model.GameboardComponent.GameBaseImpl.Cell
 import scala.reflect.ClassTag
 //Test with new approach in creating the board
 //This will work with the object Cell
