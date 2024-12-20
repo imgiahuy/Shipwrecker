@@ -1,9 +1,10 @@
-package model
-import model.shipModel.*
+package model.GameboardComponent.GameBaseImpl.shipModel
+
+import model.GameboardComponent.GameBaseImpl.shipModel.*
 
 class SimpleShipFactory extends ShipFactory {
 
-  override def createShip(size : Int): Option[Ship] = {
+  override def createShip(size : Int): Option[ShipInterface] = {
     size match {
       case 5 => Some(new SimpleShip_5)
       case 4 => Some(new SimpleShip_4)

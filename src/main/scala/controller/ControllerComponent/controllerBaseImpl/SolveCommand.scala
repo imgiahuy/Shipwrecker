@@ -1,14 +1,15 @@
-package controller
+package controller.ControllerComponent.controllerBaseImpl
 
-import model.State.*
-import model.{GameBoard, Solver}
+import model.GameboardComponent.GameBaseImpl.State.*
+import model.GameboardComponent.GameBaseImpl.{GameBoard, Solver}
+import model.GameboardComponent.GameBoardInterface
 import util.{Command, Observable}
 
 class SolveCommand (controller: Controller) extends Command {
-  var momento_b1: GameBoard = controller.b1
-  var momento_b1_blank: GameBoard = controller.b1_blank
-  var momento_b2: GameBoard = controller.b2
-  var momento_b2_blank: GameBoard = controller.b2_blank
+  var momento_b1: GameBoardInterface = controller.b1
+  var momento_b1_blank: GameBoardInterface = controller.b1_blank
+  var momento_b2: GameBoardInterface = controller.b2
+  var momento_b2_blank: GameBoardInterface = controller.b2_blank
 
   override def doStep: Unit = {
     momento_b1 = controller.b1

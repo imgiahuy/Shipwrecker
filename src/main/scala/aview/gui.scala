@@ -1,7 +1,8 @@
 package aview
 
-import controller.{Controller, GameState}
-import model.State.CONTINUE
+import controller.ControllerComponent.GameState
+import controller.ControllerComponent.controllerBaseImpl.Controller
+import model.GameboardComponent.GameBaseImpl.State.CONTINUE
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.application.JFXApp3.PrimaryStage
 import scalafx.geometry.{Insets, Pos}
@@ -488,6 +489,7 @@ class gui (controller: Controller) extends JFXApp3, Observer {
       style = "-fx-background-color: transparent;"
 
       onAction = _ =>
+        controller.clean()
         cleanGridWithStateReset(grid, buttonMap)
         cleanGridWithStateReset(grid2, buttonMap2)
         cleanGridWithStateReset(gridAttack1, buttonMapAttack1)

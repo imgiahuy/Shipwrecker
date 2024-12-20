@@ -1,8 +1,13 @@
 package controller
+
+import controller.ControllerComponent.controllerBaseImpl.Controller
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import model.*
-import model.Value.*
+import model.GameboardComponent.GameBaseImpl.{GameBoard, State}
+import model.PlayerComponent.Player
+import model.GameboardComponent.GameBaseImpl.Value.*
+import model.GameboardComponent.GameBaseImpl.shipModel.SimpleShipFactory
 import util.Observer
 
 class ControllerSpec extends AnyWordSpec with Matchers {

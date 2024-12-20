@@ -1,7 +1,8 @@
 package aview
 
-import controller.{Controller, GameState}
-import model.State.*
+import controller.ControllerComponent.GameState
+import controller.ControllerComponent.controllerBaseImpl.Controller
+import model.GameboardComponent.GameBaseImpl.State.*
 import util.Observer
 
 import scala.concurrent.Promise

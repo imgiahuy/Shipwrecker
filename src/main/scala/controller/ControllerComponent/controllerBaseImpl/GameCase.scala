@@ -1,7 +1,7 @@
-package controller
+package controller.ControllerComponent.controllerBaseImpl
 
-import model.State
-import model.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
+import model.GameboardComponent.GameBaseImpl.State
+import model.GameboardComponent.GameBaseImpl.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
 
 object GameCase {
 

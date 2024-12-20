@@ -1,12 +1,14 @@
-package controller
+package controller.ControllerComponent.controllerBaseImpl
 
-import model.Value.O
-import model.{Cell, Player, SimpleShipFactory, Value}
+import model.GameboardComponent.GameBaseImpl.Value.O
+import model.GameboardComponent.GameBaseImpl.shipModel.SimpleShipFactory
+import model.GameboardComponent.GameBaseImpl.{Cell, Value}
+import model.PlayerComponent.PlayerInterface
 import util.Command
 
-class PlaceShipCommand(player: Player, shipSize: Int, positions: List[(Int, Int)], controller: Controller) extends Command {
+class PlaceShipCommand(player: PlayerInterface, shipSize: Int, positions: List[(Int, Int)], controller: Controller) extends Command {
 
-  private var previousCells: List[(Int, Int, Cell)] = List()
+  private var previousCells: List[(Int, Int, Value)] = List()
 
   override def doStep: Unit = {
     val board = if (player == controller.player1) controller.b1 else controller.b2
@@ -16,7 +18,7 @@ class PlaceShipCommand(player: Player, shipSize: Int, positions: List[(Int, Int)
     shipOpt match {
       case Some(ship) =>
         // Save the affected cells before placing the ship
-        previousCells = positions.map { case (row, col) => (row, col, board.cells.cells(row)(col)) }
+        previousCells = positions.map { case (row, col) => (row, col, board.getCellValue(row,col)) }
 
         // Attempt to place the ship using the new placeShip method
         if (player == controller.player1) {
@@ -34,8 +36,8 @@ class PlaceShipCommand(player: Player, shipSize: Int, positions: List[(Int, Int)
     val board = if (player == controller.player1) controller.b1 else controller.b2
 
     // Restore the previous state of the affected cells
-    previousCells.foreach { case (row, col, cell) =>
-      board.cells.replace(row, col, cell)
+    previousCells.foreach { case (row, col, value) =>
+      board.updateCell(row, col, value)
     }
     player.increase()
   }

@@ -1,15 +1,15 @@
-package controller
+package controller.ControllerComponent.controllerBaseImpl
 
-import controller.GameState.GameState
-import util.{Observable, UndoManager}
+import controller.ControllerComponent.ControllerInterface
+import controller.ControllerComponent.GameState.GameState
 import model.*
-import model.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
-import model.Value.O
+import model.GameboardComponent.GameBaseImpl.State.CONTINUE
+import model.GameboardComponent.GameBoardInterface
+import model.PlayerComponent.PlayerInterface
+import util.{Observable, UndoManager}
 
-import scala.collection.mutable.ListBuffer
-
-class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var b1_blank: GameBoard, var b2_blank: GameBoard,
-                 var player1: Player, var player2: Player) extends Observable {
+class Controller(var b1: GameBoardInterface, var b2: GameBoardInterface, var show: GameBoardInterface, var b1_blank: GameBoardInterface, var b2_blank: GameBoardInterface,
+                 var player1: PlayerInterface, var player2: PlayerInterface) extends ControllerInterface {
 
   private var remainingShips: Map[String, Int] = Map(
     player1.name -> player1.numShip,
@@ -36,7 +36,7 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
     notifyObservers
   }
 
-  def placeShips(player: Player, shipSize: Int, positions: List[(Int, Int)]): Unit = {
+  def placeShips(player: PlayerInterface, shipSize: Int, positions: List[(Int, Int)]): Unit = {
     undoManager.doStep(new PlaceShipCommand(player, shipSize, positions, this))
     notifyObservers
   }
@@ -95,13 +95,13 @@ class Controller(var b1: GameBoard, var b2: GameBoard, var show: GameBoard, var 
     undoManager.redoStep
     notifyObservers
   }
-  def getPlacedShips(player: Player): List[(Int, Int)] = {
+  def getPlacedShips(player: PlayerInterface): List[(Int, Int)] = {
     val gameBoard = if (player == player1) b1 else b2
-    gameBoard.getShipPositions()
+    gameBoard.getShipPositions
   }
 
-  def getAttackShips(player: Player): List[(Int, Int)] = {
+  def getAttackShips(player: PlayerInterface): List[(Int, Int)] = {
     val gameBoard = if (player == player1) b1_blank else b2_blank
-    gameBoard.getAttackPositions()
+    gameBoard.getAttackPositions
   }
 }

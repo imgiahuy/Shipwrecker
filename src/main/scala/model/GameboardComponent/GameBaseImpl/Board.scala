@@ -1,4 +1,5 @@
-package model
+package model.GameboardComponent.GameBaseImpl
+
 import scala.reflect.ClassTag
 
 case class Board[Cell : ClassTag](cells : Array[Array[Cell]]) {

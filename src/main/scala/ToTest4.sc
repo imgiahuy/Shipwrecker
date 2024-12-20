@@ -18,8 +18,8 @@ case class Ship(shipCell : Array[Cell]) {
   }
   override def toString: String = shipCell.mkString("Array(", ", ", ")");
 }
-import model.GameBoard
 
+import model.GameboardComponent.GameBaseImpl.GameBoard
 import scala.reflect.ClassTag
 
 case class Board[Cell : ClassTag](cells : Array[Array[Cell]]) {

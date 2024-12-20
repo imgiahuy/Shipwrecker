@@ -1,6 +1,6 @@
 package model
 
-import model.Player
+import model.PlayerComponent.Player
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

@@ -1,4 +1,4 @@
-package model
+package model.GameboardComponent.GameBaseImpl
 
 enum State (val statement : String) {
   case CONTINUE extends State("Continue to play the game")

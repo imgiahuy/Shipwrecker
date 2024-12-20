@@ -1,6 +1,8 @@
 import model.*
-import aview.{tui, gui}
-import controller.Controller
+import aview.{gui, tui}
+import controller.ControllerComponent.controllerBaseImpl.Controller
+import model.GameboardComponent.GameBaseImpl.{DefaultStrategy, GameBoardGenerator}
+import model.PlayerComponent.Player
 
 import scala.io.StdIn.readLine
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -10,11 +12,11 @@ object Shipwrecker {
   val generator = new GameBoardGenerator(new DefaultStrategy)
 
   val shipNumber = 5
-  var board_pl1 = generator.createStrategy()
-  var board_pl1_blk = generator.createStrategy()
-  var board_pl2 = generator.createStrategy()
-  var board_pl2_blk = generator.createStrategy()
-  var board_show = generator.createStrategy()
+  var board_pl1 = generator.createStrategy(12)
+  var board_pl1_blk = generator.createStrategy(12)
+  var board_pl2 = generator.createStrategy(12)
+  var board_pl2_blk = generator.createStrategy(12)
+  var board_show = generator.createStrategy(12)
   var player1 = Player("Huy", shipNumber)
   var player2 = Player("Computer", shipNumber)
   val controller = new Controller(board_pl1, board_pl2, board_show, board_pl1_blk, board_pl2_blk, player1, player2)

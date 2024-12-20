@@ -1,16 +1,16 @@
-package controller
+package controller.ControllerComponent.controllerBaseImpl
 
-import model.{Cell, Player, Value}
+import model.GameboardComponent.GameBaseImpl.{Cell, Value}
+import model.PlayerComponent.PlayerInterface
 import util.Command
 
-class AttackCommand (player: Player, pox: Int, poy: Int, controller: Controller) extends Command {
+class AttackCommand (player: PlayerInterface, pox: Int, poy: Int, controller: Controller) extends Command {
 
-  private var previousOpponentCell: Option[Cell] = None
-  private var previousBlankCell: Option[Cell] = None
+  private var previousOpponentCell: Option[Value] = None
+  private var previousBlankCell: Option[Value] = None
   private var hitSuccessful: Boolean = false
 
   override def doStep: Unit = {
-    // Determine opponent's board and player's blank board
     val (oppBoard, myBlankBoard) = if (player == controller.player1) {
       (controller.b1, controller.b2_blank)
     } else {
@@ -18,16 +18,15 @@ class AttackCommand (player: Player, pox: Int, poy: Int, controller: Controller)
     }
 
     // Save previous state of the affected cells
-    previousOpponentCell = Some(oppBoard.cells.cells(pox)(poy))
-    previousBlankCell = Some(myBlankBoard.cells.cells(pox)(poy))
+    previousOpponentCell = Some(oppBoard.getCellValue(pox, poy))
+    previousBlankCell = Some(myBlankBoard.getCellValue(pox, poy))
 
     // Perform the attack
     hitSuccessful = oppBoard.hit(pox, poy)
-    myBlankBoard.cells.replace(pox, poy, Cell(if (hitSuccessful) Value.O else Value.X))
+    myBlankBoard.updateCell(pox, poy, if (hitSuccessful) Value.O else Value.X)
   }
 
   override def undoStep: Unit = {
-    // Determine opponent's board and player's blank board
     val (oppBoard, myBlankBoard) = if (player == controller.player1) {
       (controller.b1, controller.b2_blank)
     } else {
@@ -35,20 +34,17 @@ class AttackCommand (player: Player, pox: Int, poy: Int, controller: Controller)
     }
 
     // Restore the previous state of the affected cells
-    previousOpponentCell.foreach(cell => oppBoard.cells.replace(pox, poy, cell))
-    previousBlankCell.foreach(cell => myBlankBoard.cells.replace(pox, poy, cell))
+    previousOpponentCell.foreach(value => oppBoard.updateCell(pox, poy, value))
+    previousBlankCell.foreach(value => myBlankBoard.updateCell(pox, poy, value))
   }
 
   override def redoStep: Unit = {
-    // Redo the attack using the saved state
     val (oppBoard, myBlankBoard) = if (player == controller.player1) {
       (controller.b1, controller.b2_blank)
     } else {
       (controller.b2, controller.b1_blank)
     }
-
-    // Reapply the attack
     oppBoard.hit(pox, poy) // Re-hit to ensure game logic consistency
-    myBlankBoard.cells.replace(pox, poy, Cell(if (hitSuccessful) Value.O else Value.X))
+    myBlankBoard.updateCell(pox, poy, if (hitSuccessful) Value.O else Value.X)
   }
 }
