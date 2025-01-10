@@ -1,5 +1,6 @@
 package controller.ControllerComponent
-
+import controller.ControllerComponent.GameState.GameState
+import model.GameboardComponent.GameBoardInterface
 import model.PlayerComponent.PlayerInterface
 import util.Observable
 
@@ -14,6 +15,10 @@ trait ControllerInterface extends Observable {
   def getNamePlayer1: String
 
   def getNamePlayer2: String
+  
+  def getPlayer1 : PlayerInterface
+  
+  def getPlayer2 : PlayerInterface
 
   def showMe(): Unit
 
@@ -33,4 +38,11 @@ trait ControllerInterface extends Observable {
 
   def getAttackShips(player: PlayerInterface): List[(Int, Int)]
   
+  def getGameState : GameState
+  
+  def adjustGameState(state: GameState) : Unit
+  
+  def getBoard1 : GameBoardInterface
+  
+  def getBoard2 : GameBoardInterface
 }

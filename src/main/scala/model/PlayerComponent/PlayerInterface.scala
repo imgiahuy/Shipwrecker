@@ -3,7 +3,6 @@ package model.PlayerComponent
 trait PlayerInterface {
   // Gibt den Namen des Spielers zurück
   def name: String
-
   // Gibt die Anzahl der Schiffe des Spielers zurück
   def numShip: Int
 

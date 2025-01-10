@@ -1,5 +1,7 @@
 package controller.ControllerComponent.controllerBaseImpl
 
+import com.google.inject.Inject
+import com.google.inject.name.Named
 import controller.ControllerComponent.ControllerInterface
 import controller.ControllerComponent.GameState.GameState
 import model.*
@@ -8,8 +10,8 @@ import model.GameboardComponent.GameBoardInterface
 import model.PlayerComponent.PlayerInterface
 import util.{Observable, UndoManager}
 
-class Controller(var b1: GameBoardInterface, var b2: GameBoardInterface, var show: GameBoardInterface, var b1_blank: GameBoardInterface, var b2_blank: GameBoardInterface,
-                 var player1: PlayerInterface, var player2: PlayerInterface) extends ControllerInterface {
+class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterface, var show: GameBoardInterface, var b1_blank: GameBoardInterface, var b2_blank: GameBoardInterface,
+                            @Named("Player1") var player1: PlayerInterface, @Named("Player2") var player2: PlayerInterface) extends ControllerInterface {
 
   private var remainingShips: Map[String, Int] = Map(
     player1.name -> player1.numShip,
@@ -19,7 +21,7 @@ class Controller(var b1: GameBoardInterface, var b2: GameBoardInterface, var sho
   private val undoManager = new UndoManager
   var gameState: GameState = CONTINUE
 
-  def clean(): Unit = {
+  override def clean(): Unit = {
     b1.clean()
     b2.clean()
     show.clean()
@@ -36,29 +38,29 @@ class Controller(var b1: GameBoardInterface, var b2: GameBoardInterface, var sho
     notifyObservers
   }
 
-  def placeShips(player: PlayerInterface, shipSize: Int, positions: List[(Int, Int)]): Unit = {
+  override def placeShips(player: PlayerInterface, shipSize: Int, positions: List[(Int, Int)]): Unit = {
     undoManager.doStep(new PlaceShipCommand(player, shipSize, positions, this))
     notifyObservers
   }
 
-  def solver(): Unit = {
+  override def solver(): Unit = {
     undoManager.doStep(new SolveCommand(this))
     notifyObservers
   }
 
-  def getNamePlayer1: String = {
+  override def getNamePlayer1: String = {
     player1.name
   }
 
-  def getNamePlayer2: String = {
+  override def getNamePlayer2: String = {
     player2.name
   }
 
-  def showMe(): Unit = {
+  override def showMe(): Unit = {
     show.display()
   }
 
-  def boardShow(player: String): Unit = {
+  override def boardShow(player: String): Unit = {
     if (player == player1.name) {
       b1.display()
     }
@@ -67,7 +69,7 @@ class Controller(var b1: GameBoardInterface, var b2: GameBoardInterface, var sho
     }
   }
 
-  def blankBoardShow(player: String): Unit = {
+  override def blankBoardShow(player: String): Unit = {
     if (player == player1.name) {
       b1_blank.display()
     }
@@ -76,32 +78,53 @@ class Controller(var b1: GameBoardInterface, var b2: GameBoardInterface, var sho
     }
   }
 
-  def getNumShip(playerName: String): Int = {
+  override def getNumShip(playerName: String): Int = {
     remainingShips.getOrElse(playerName, 0)
   }
 
-  def attack(pox: Int, poy: Int, player: String): Unit = {
+  override def attack(pox: Int, poy: Int, player: String): Unit = {
     val attacker = if (player == player1.name) player1 else player2
     undoManager.doStep(new AttackCommand(attacker, pox, poy, this))
     notifyObservers
   }
 
-  def undo: Unit = {
+  override def undo: Unit = {
     undoManager.undoStep
     notifyObservers
   }
 
-  def redo: Unit = {
+  override def redo: Unit = {
     undoManager.redoStep
     notifyObservers
   }
-  def getPlacedShips(player: PlayerInterface): List[(Int, Int)] = {
+  override def getPlacedShips(player: PlayerInterface): List[(Int, Int)] = {
     val gameBoard = if (player == player1) b1 else b2
     gameBoard.getShipPositions
   }
 
-  def getAttackShips(player: PlayerInterface): List[(Int, Int)] = {
+  override def getAttackShips(player: PlayerInterface): List[(Int, Int)] = {
     val gameBoard = if (player == player1) b1_blank else b2_blank
     gameBoard.getAttackPositions
   }
+
+  override def getPlayer1: PlayerInterface = {
+    player1
+  }
+
+  override def getPlayer2: PlayerInterface = {
+    player2
+  }
+
+  override def getGameState: GameState = {
+    gameState
+  }
+
+  override def adjustGameState(state: GameState) : Unit = {
+    gameState = state
+  }
+
+  override def getBoard1: GameBoardInterface = b1
+
+  override def getBoard2: GameBoardInterface = b2
+
 }
