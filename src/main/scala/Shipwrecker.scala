@@ -1,25 +1,16 @@
 import model.*
 import aview.{gui, tui}
-import controller.ControllerComponent.controllerBaseImpl.Controller
-import model.GameboardComponent.GameBaseImpl.{DefaultStrategy, GameBoardGenerator}
-import model.PlayerComponent.Player
+import com.google.inject.Guice
+import controller.ControllerComponent.ControllerInterface
 
 import scala.io.StdIn.readLine
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object Shipwrecker {
-  val generator = new GameBoardGenerator(new DefaultStrategy)
 
-  val shipNumber = 5
-  var board_pl1 = generator.createStrategy(12)
-  var board_pl1_blk = generator.createStrategy(12)
-  var board_pl2 = generator.createStrategy(12)
-  var board_pl2_blk = generator.createStrategy(12)
-  var board_show = generator.createStrategy(12)
-  var player1 = Player("Huy", shipNumber)
-  var player2 = Player("Computer", shipNumber)
-  val controller = new Controller(board_pl1, board_pl2, board_show, board_pl1_blk, board_pl2_blk, player1, player2)
+  val injector = Guice.createInjector(new ShipwreckerModule)
+  val controller = injector.getInstance(classOf[ControllerInterface])
   val Tui = new tui(controller)
   val Gui = new gui(controller)
 
@@ -31,7 +22,6 @@ object Shipwrecker {
     // Run the TUI in the main thread
     var input: String = ""
     while (input != "q") {
-      println("Game-board : " + board_show.toString)
       input = readLine()
       Tui.handleCommand(input)
     }

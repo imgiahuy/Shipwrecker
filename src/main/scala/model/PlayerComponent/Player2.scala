@@ -3,8 +3,8 @@ package model.PlayerComponent
 import com.google.inject.Inject
 import com.google.inject.name.Named
 
-case class Player @Inject() (@Named("Player1") name: String, @Named("ShipNumber") var numShip: Int) extends PlayerInterface {
-  
+case class Player2 @Inject() (@Named("Player2") name: String, @Named("ShipNumber") var numShip: Int) extends PlayerInterface {
+
   override def decrease(): Unit = numShip = numShip - 1
 
   override def increase(): Unit = numShip = numShip + 1

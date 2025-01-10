@@ -1,13 +1,11 @@
 package aview
 
-import controller.ControllerComponent.GameState
-import controller.ControllerComponent.controllerBaseImpl.Controller
-import model.GameboardComponent.GameBaseImpl.State.CONTINUE
-import util.Observer
+import controller.ControllerComponent.ControllerInterface
+
 
 import scala.io.StdIn.*
 
-class tui(controller: Controller) extends TuiTemplate(controller) {
+class tui(controller: ControllerInterface) extends TuiTemplate(controller) {
 
   // Implement the command handling logic
   override def handleCommand(command: String): Unit = {
@@ -18,8 +16,8 @@ class tui(controller: Controller) extends TuiTemplate(controller) {
 
       case input if input.startsWith("place ship") =>
         processPlaceShip(input.stripPrefix("place ship").trim)
-        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.player1.numShip}")
-        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.player2.numShip}")
+        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.getPlayer1.numShip}")
+        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.getPlayer2.numShip}")
 
       case input if input.startsWith("attack") =>
         processAttack(input.stripPrefix("attack").trim)
@@ -27,8 +25,8 @@ class tui(controller: Controller) extends TuiTemplate(controller) {
       case "undo" =>
         controller.undo
         println("Undo successful.")
-        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.player1.numShip}")
-        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.player2.numShip}")
+        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.getPlayer1.numShip}")
+        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.getPlayer2.numShip}")
 
       case "redo" =>
         controller.redo
@@ -55,9 +53,9 @@ class tui(controller: Controller) extends TuiTemplate(controller) {
 
     // Validate player name
     val player = if (playerName == controller.getNamePlayer1) {
-      controller.player1
+      controller.getPlayer1
     } else if (playerName == controller.getNamePlayer2) {
-      controller.player2
+      controller.getPlayer2
     } else {
       println(s"Unknown player: $playerName. Please enter a valid name.")
       return
@@ -106,9 +104,9 @@ class tui(controller: Controller) extends TuiTemplate(controller) {
 
     // Validate attacker name
     val (attacker, defender) = if (attackerName == controller.getNamePlayer1) {
-      (controller.player1, controller.player2)
+      (controller.getPlayer1, controller.getPlayer2)
     } else if (attackerName == controller.getNamePlayer2) {
-      (controller.player2, controller.player1)
+      (controller.getPlayer2, controller.getPlayer1)
     } else {
       println(s"Unknown attacker: $attackerName. Please enter a valid name.")
       return

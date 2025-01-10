@@ -1,13 +1,11 @@
 package aview
 
-import controller.ControllerComponent.GameState
-import controller.ControllerComponent.controllerBaseImpl.Controller
-import model.GameboardComponent.GameBaseImpl.State.*
+import controller.ControllerComponent.{ControllerInterface, GameState}
 import util.Observer
 
 import scala.concurrent.Promise
 
-abstract class TuiTemplate(controller: Controller) extends Observer {
+abstract class TuiTemplate(controller: ControllerInterface) extends Observer {
   controller.add(this)
 
   // Template method defining the skeleton of input processing
@@ -47,7 +45,7 @@ abstract class TuiTemplate(controller: Controller) extends Observer {
 
   def showGameState(): Unit = {
     println("\n")
-    println(GameState.message(controller.gameState))
+    println(GameState.message(controller.getGameState))
 
     //controller.gameState = CONTINUE
   }

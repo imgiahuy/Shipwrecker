@@ -1,9 +1,9 @@
 package controller.ControllerComponent.controllerBaseImpl
 
 import model.GameboardComponent.GameBaseImpl.State.*
-import model.GameboardComponent.GameBaseImpl.{GameBoard, Solver}
+import model.GameboardComponent.GameBaseImpl.Solver
 import model.GameboardComponent.GameBoardInterface
-import util.{Command, Observable}
+import util.Command
 
 class SolveCommand (controller: Controller) extends Command {
   var momento_b1: GameBoardInterface = controller.b1

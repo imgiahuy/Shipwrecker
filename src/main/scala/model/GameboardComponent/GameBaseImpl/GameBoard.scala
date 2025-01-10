@@ -1,5 +1,6 @@
 package model.GameboardComponent.GameBaseImpl
 
+import com.google.inject.Inject
 import model.PlayerComponent.PlayerInterface
 import model.GameboardComponent.GameBaseImpl.Value.{O, X, ☐}
 import model.GameboardComponent.GameBaseImpl.shipModel.ShipInterface
@@ -7,11 +8,11 @@ import model.GameboardComponent.{CellInterface, GameBoardInterface}
 
 import scala.reflect.ClassTag
 
-case class GameBoard(cells: Board[Cell]) extends GameBoardInterface {
+case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
 
   def this(size: Int) = this(new Board[Cell](size, Cell(☐)))
 
-  def placeShip(player: PlayerInterface, shipOpt: Option[ShipInterface], positions: List[(Int, Int)], value: CellInterface): GameBoard = {
+  override def placeShip(player: PlayerInterface, shipOpt: Option[ShipInterface], positions: List[(Int, Int)], value: CellInterface): GameBoard = {
     shipOpt match {
       case Some(ship) =>
         // Ensure the ship size is between 2 and 5, and matches the number of provided positions
@@ -38,13 +39,13 @@ case class GameBoard(cells: Board[Cell]) extends GameBoardInterface {
   }
 
   // Helper method to check if a ship placement is valid (no overlapping, within bounds)
-  def isPlacementValid(ship: ShipInterface, positions: List[(Int, Int)]): Boolean = {
+  override def isPlacementValid(ship: ShipInterface, positions: List[(Int, Int)]): Boolean = {
     positions.forall {
       case (x, y) => isWithinBounds(x, y) && cells.cells(x)(y).value == Value.☐
     }
   }
 
-  def positionValid(positions: List[(Int, Int)]): Boolean = {
+  override def positionValid(positions: List[(Int, Int)]): Boolean = {
     if (positions.isEmpty || positions.length > 5 || positions.length < 2) {
       return false
     }
@@ -70,14 +71,14 @@ case class GameBoard(cells: Board[Cell]) extends GameBoardInterface {
 
 
   // Helper method to check if a position is within the board's bounds
-  def isWithinBounds(x: Int, y: Int): Boolean = {
+  override def isWithinBounds(x: Int, y: Int): Boolean = {
     x >= 0 && x < cells.numRows && y >= 0 && y < cells.numCols
   }
 
 
-  def clean(): Unit = cells.replaceAll(Cell(Value.☐))
+  override def clean(): Unit = cells.replaceAll(Cell(Value.☐))
 
-  def hit(where: (Int, Int)): Boolean = {
+  override def hit(where: (Int, Int)): Boolean = {
     val (row, col) = where
     val currentCell = cells.cells(row)(col)
     if (currentCell == Cell(Value.☐) || currentCell == Cell(Value.X) ) {
@@ -87,7 +88,7 @@ case class GameBoard(cells: Board[Cell]) extends GameBoardInterface {
     }
   }
 
-  def copyBoard(): GameBoard = {
+  override def copyBoard(): GameBoard = {
     val size = cells.cells.length
     val newBoard = new Board[Cell](size, Cell(Value.☐))
     for (i <- cells.cells.indices; j <- cells.cells(i).indices) {
@@ -98,9 +99,9 @@ case class GameBoard(cells: Board[Cell]) extends GameBoardInterface {
     GameBoard(newBoard)
   }
 
-  def display(): Unit = cells.display()
+  override def display(): Unit = cells.display()
 
-  def isEmpty: Boolean = {
+  override def isEmpty: Boolean = {
     cells.cells.forall(row => row.forall(_ == Cell(Value.☐)))
   }
 
@@ -121,7 +122,7 @@ case class GameBoard(cells: Board[Cell]) extends GameBoardInterface {
 //    }
 //    true
 //  }
-  def getShipPositions: List[(Int, Int)] = {
+  override def getShipPositions: List[(Int, Int)] = {
     (for {
       row <- cells.cells.indices
       col <- cells.cells(row).indices
@@ -129,7 +130,7 @@ case class GameBoard(cells: Board[Cell]) extends GameBoardInterface {
     } yield (row, col)).toList
   }
 
-  def getAttackPositions: List[(Int, Int)] = {
+  override def getAttackPositions: List[(Int, Int)] = {
     cells.cells.indices.flatMap { row =>
       cells.cells(row).indices.collect {
         case col if cells.cells(row)(col).value == Value.O || cells.cells(row)(col).value == Value.X =>

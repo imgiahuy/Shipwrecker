@@ -1,23 +1,22 @@
 package aview
 
-import controller.ControllerComponent.GameState
-import controller.ControllerComponent.controllerBaseImpl.Controller
+import controller.ControllerComponent.ControllerInterface
 import model.GameboardComponent.GameBaseImpl.State.CONTINUE
-import scalafx.application.{JFXApp3, Platform}
+import scalafx.application.JFXApp3
 import scalafx.application.JFXApp3.PrimaryStage
 import scalafx.geometry.{Insets, Pos}
 import scalafx.geometry.Pos.TopLeft
 import scalafx.scene.Scene
 import scalafx.scene.control.{Button, Label}
 import scalafx.scene.image.{Image, ImageView}
-import scalafx.scene.layout.{BorderPane, FlowPane, GridPane, Region, StackPane, VBox}
+import scalafx.scene.layout.{BorderPane, GridPane, StackPane, VBox}
 import util.Observer
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 
-class gui (controller: Controller) extends JFXApp3, Observer {
+class gui (controller: ControllerInterface) extends JFXApp3, Observer {
 
   controller.add(this)
 
@@ -265,10 +264,10 @@ class gui (controller: Controller) extends JFXApp3, Observer {
 
       onAction = _ =>
         if (whoIs) {
-          if (coordinate.length <= 5 && coordinate.length >= 2 && controller.player1.numShip > 0
-            && controller.b1.positionValid(coordinate.toList)) {
+          if (coordinate.length <= 5 && coordinate.length >= 2 && controller.getPlayer1.numShip > 0
+            && controller.getBoard1.positionValid(coordinate.toList)) {
 
-            controller.placeShips(controller.player1, coordinate.length, coordinate.toList)
+            controller.placeShips(controller.getPlayer1, coordinate.length, coordinate.toList)
             coordinate.foreach {
               case (row, col) =>
                 buttonMap((row, col)).style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: green;"
@@ -276,20 +275,20 @@ class gui (controller: Controller) extends JFXApp3, Observer {
                 messageLabel.text = "Ship placed successfully!"
             }
             coordinate.clear()
-            println(controller.player1.numShip)
+            println(controller.getPlayer1.numShip)
           }
         } else {
-          if (coordinate.length <= 5 && coordinate.length >= 2 && controller.player2.numShip > 0
-            && controller.b2.positionValid(coordinate.toList)) {
+          if (coordinate.length <= 5 && coordinate.length >= 2 && controller.getPlayer2.numShip > 0
+            && controller.getBoard2.positionValid(coordinate.toList)) {
 
-            controller.placeShips(controller.player2, coordinate.length, coordinate.toList)
+            controller.placeShips(controller.getPlayer2, coordinate.length, coordinate.toList)
             coordinate.foreach {
               case (row, col) =>
                 buttonMap2((row, col)).style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: green;"
                 buttonMap2((row, col)).disable = true
             }
             coordinate.clear()
-            println(controller.player2.numShip)
+            println(controller.getPlayer2.numShip)
           }
         }
     }
@@ -307,7 +306,7 @@ class gui (controller: Controller) extends JFXApp3, Observer {
       onAction = _ =>
         if (whoIs) {
           if (coordinate.length == 1) {
-            controller.attack(coordinate.head._1, coordinate.head._2, controller.player2.name)
+            controller.attack(coordinate.head._1, coordinate.head._2, controller.getPlayer2.name)
             if (buttonMap2(coordinate.head._1, coordinate.head._2).isDisable) {
               buttonMapAttack1(coordinate.head._1, coordinate.head._2).style = "-fx-background-color: green;"
               buttonMapAttack1(coordinate.head._1, coordinate.head._2).disable = true
@@ -323,7 +322,7 @@ class gui (controller: Controller) extends JFXApp3, Observer {
           }
         } else {
           if (coordinate.length == 1) {
-            controller.attack(coordinate.head._1, coordinate.head._2, controller.player1.name)
+            controller.attack(coordinate.head._1, coordinate.head._2, controller.getPlayer1.name)
             if (buttonMap(coordinate.head._1, coordinate.head._2).isDisable) {
               buttonMapAttack2(coordinate.head._1, coordinate.head._2).style = "-fx-background-color: green;"
               buttonMapAttack2(coordinate.head._1, coordinate.head._2).disable = true
@@ -467,7 +466,7 @@ class gui (controller: Controller) extends JFXApp3, Observer {
 
       onAction = _ =>
         val check = controller.solver()
-        print(controller.gameState)
+        print(controller.getGameState)
     }
 
     def cleanGridWithStateReset(grid: GridPane, buttonMap: mutable.Map[(Int, Int), Button]): Unit = {
@@ -553,8 +552,8 @@ class gui (controller: Controller) extends JFXApp3, Observer {
   }
 
   override def update(): Unit = {
-    messageLabel.text = controller.gameState.statement
-    controller.gameState = CONTINUE
+    messageLabel.text = controller.getGameState.statement
+    controller.adjustGameState(CONTINUE)
   }
 
   private def refreshGrid(): Unit = {
@@ -570,14 +569,14 @@ class gui (controller: Controller) extends JFXApp3, Observer {
         button.disable = false
       }
       // Update the buttons based on the controller state
-      val placedShips = controller.getPlacedShips(controller.player1)
+      val placedShips = controller.getPlacedShips(controller.getPlayer1)
       placedShips.foreach { case (row, col) =>
         val button = buttonMap((row, col))
         button.style = "-fx-background-color: green;" // Highlight placed ship
         button.disable = true // Disable button for placed ship
       }
 
-      val attackShips = controller.getAttackShips(controller.player1)
+      val attackShips = controller.getAttackShips(controller.getPlayer1)
       attackShips.foreach { case (row, col) =>
         val button = buttonMapAttack1((row, col))
         button.style = "-fx-background-color: red;" // Mark attack position
@@ -594,14 +593,14 @@ class gui (controller: Controller) extends JFXApp3, Observer {
         button.disable = false
       }
       // Update the buttons based on the controller state
-      val placedShips = controller.getPlacedShips(controller.player2)
+      val placedShips = controller.getPlacedShips(controller.getPlayer2)
       placedShips.foreach { case (row, col) =>
         val button = buttonMap2((row, col))
         button.style = "-fx-background-color: green;" // Highlight placed ship
         button.disable = true // Disable button for placed ship
       }
 
-      val attackShips = controller.getAttackShips(controller.player2)
+      val attackShips = controller.getAttackShips(controller.getPlayer2)
       attackShips.foreach { case (row, col) =>
         val button = buttonMapAttack2((row, col))
         button.style = "-fx-background-color: red;" // Mark attack position
