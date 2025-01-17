@@ -35,6 +35,10 @@ class tui(controller: ControllerInterface) extends TuiTemplate(controller) {
       case "check" =>
         val check = controller.solver()
 
+      case "load" => controller.load
+
+      case "save" => controller.save
+
       case _ =>
         println("Unknown command. Please try again.")
     }

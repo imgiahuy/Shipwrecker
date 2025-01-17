@@ -1,7 +1,7 @@
 package model.GameboardComponent
 
 import model.PlayerComponent.PlayerInterface
-import model.GameboardComponent.GameBaseImpl.Value
+import model.GameboardComponent.GameBaseImpl.{Board, Value}
 import model.GameboardComponent.GameBaseImpl.shipModel.ShipInterface
 
 trait GameBoardInterface {

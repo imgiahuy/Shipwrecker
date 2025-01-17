@@ -62,6 +62,12 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
     val UndoButtonImg = new Image(getClass.getResource("/undo.png").toString)
     val undoButtonImageView = new ImageView(UndoButtonImg)
 
+    val loadButtonImg = new Image(getClass.getResource("/load.png").toString)
+    val loadButtonImageView = new ImageView(loadButtonImg)
+
+    val saveButtonImg = new Image(getClass.getResource("/save1.png").toString)
+    val saveButtonImageView = new ImageView(saveButtonImg)
+
 
     val captainImage = new Image(getClass.getResource("/captain1.jpg").toString)
     val captainImageView = new ImageView(captainImage)
@@ -469,6 +475,36 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
         print(controller.getGameState)
     }
 
+    val loadButton: Button = new Button("Load") {
+      minWidth = 150
+      minHeight = 50
+      maxWidth = 150
+      maxHeight = 50
+      graphic = loadButtonImageView
+      loadButtonImageView.fitWidth <== width
+      loadButtonImageView.fitHeight <== height
+      loadButtonImageView.preserveRatio = true
+      style = "-fx-background-color: transparent;"
+
+      onAction = _ =>
+        controller.load
+    }
+
+    val saveButton: Button = new Button("Save") {
+      minWidth = 150
+      minHeight = 50
+      maxWidth = 150
+      maxHeight = 50
+      graphic = saveButtonImageView
+      saveButtonImageView.fitWidth <== width
+      saveButtonImageView.fitHeight <== height
+      saveButtonImageView.preserveRatio = true
+      style = "-fx-background-color: transparent;"
+
+      onAction = _ =>
+        controller.save
+    }
+
     def cleanGridWithStateReset(grid: GridPane, buttonMap: mutable.Map[(Int, Int), Button]): Unit = {
       for ((key, button) <- buttonMap) {
         button.style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
@@ -510,8 +546,10 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
       add(startButton, 2, 1)
       add(checkButton,3,0)
       add(backButton,3,1)
-      add(newButton,4,1)
-      add(messageLabel,4,0)
+      add(newButton,4,0)
+      add(loadButton,4,1)
+      add(saveButton,5,0)
+      add(messageLabel,5,1)
     }
 
     val functionBox = new VBox {

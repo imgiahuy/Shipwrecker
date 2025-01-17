@@ -5,13 +5,14 @@ import com.google.inject.name.Named
 import controller.ControllerComponent.ControllerInterface
 import controller.ControllerComponent.GameState.GameState
 import model.*
+import model.FileIO.FileIOInterface
 import model.GameboardComponent.GameBaseImpl.State.CONTINUE
 import model.GameboardComponent.GameBoardInterface
 import model.PlayerComponent.PlayerInterface
 import util.{Observable, UndoManager}
 
 class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterface, var show: GameBoardInterface, var b1_blank: GameBoardInterface, var b2_blank: GameBoardInterface,
-                            @Named("Player1") var player1: PlayerInterface, @Named("Player2") var player2: PlayerInterface) extends ControllerInterface {
+                            @Named("Player1") var player1: PlayerInterface, @Named("Player2") var player2: PlayerInterface, fileIO: FileIOInterface) extends ControllerInterface {
 
   private var remainingShips: Map[String, Int] = Map(
     player1.name -> player1.numShip,
@@ -127,4 +128,27 @@ class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterfa
 
   override def getBoard2: GameBoardInterface = b2
 
+  override def load: Unit = {
+    val (loadedB1, loadedB2, loadedB1Blank, loadedB2Blank) = fileIO.load
+    b1 = loadedB1
+    b2 = loadedB2
+    b1_blank = loadedB1Blank
+    b2_blank = loadedB2Blank
+
+    // Load player information from the file
+    player1.numShip = fileIO.getPlayer1ShipCount // Assuming method in FileIOInterface to retrieve player 1's ship count
+    player2.numShip = fileIO.getPlayer2ShipCount // Assuming method in FileIOInterface to retrieve player 2's ship count
+
+    // Update the remaining ships map
+    remainingShips = Map(
+      player1.name -> player1.numShip,
+      player2.name -> player2.numShip
+    )
+    notifyObservers
+  }
+
+  override def save: Unit = {
+    fileIO.save(b1, b2, b1_blank, b2_blank, player1, player2)
+    notifyObservers
+  }
 }
