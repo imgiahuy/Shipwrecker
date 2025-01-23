@@ -45,4 +45,8 @@ trait ControllerInterface extends Observable {
   def getBoard1 : GameBoardInterface
   
   def getBoard2 : GameBoardInterface
+  
+  def load: Unit
+  
+  def save: Unit
 }

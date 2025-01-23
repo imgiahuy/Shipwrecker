@@ -13,7 +13,10 @@ lazy val root = (project in file("."))
         jacocoCoverallsPullRequest := sys.env.get("GITHUB_EVENT_NAME"),
         jacocoCoverallsRepoToken := sys.env.get("COVERALLS_REPO_TOKEN"),
         libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
-        libraryDependencies += "net.codingwell" %% "scala-guice" % "7.0.0"
+        libraryDependencies += "net.codingwell" %% "scala-guice" % "7.0.0",
+        libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.3.0",
+        libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.5"
+
 )
 jacocoReportSettings := JacocoReportSettings()
   .withThresholds(
