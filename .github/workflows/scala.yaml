@@ -18,14 +18,6 @@ jobs:
         with:
           java-version: '22'
           distribution: 'adopt'
-      - name: Install sbt
-        run: |
-          echo "Installing sbt..."
-          echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-          sudo apt-get update
-          # Add the missing GPG key for sbt
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 99E82A75642AC823
-          sudo apt-get install sbt
       - name: compile
         run: sbt compile
       - name: run tests
@@ -33,11 +25,11 @@ jobs:
   run_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Build Project and export Coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          export CI_BRANCH="${GITHUB_REF#refs/heads/}"
-          sbt clean jacoco jacocoCoveralls
+     - uses: actions/checkout@v2
+     - name: Build Project and export Coverage
+       env:
+         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+         COVERALLS_REPO_TOKEN: ${{  secrets.COVERALLS_REPO_TOKEN }}
+       run: |
+         export CI_BRANCH="${GITHUB_REF#refs/heads/}"
+         sbt clean jacoco jacocoCoveralls
