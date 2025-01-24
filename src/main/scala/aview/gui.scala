@@ -10,6 +10,7 @@ import scalafx.scene.Scene
 import scalafx.scene.control.{Button, Label}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.{BorderPane, GridPane, StackPane, VBox}
+import scalafx.scene.paint.Color
 import util.Observer
 
 import scala.collection.mutable
@@ -69,22 +70,29 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
     val saveButtonImageView = new ImageView(saveButtonImg)
 
 
-    val captainImage = new Image(getClass.getResource("/captain1.jpg").toString)
+    val borderColor = Color.Black
+
+    val captainImage = new Image(getClass.getResource("/marine.png").toString)
     val captainImageView = new ImageView(captainImage)
     captainImageView.fitWidth = 400
-    captainImageView.fitHeight = 620
+    captainImageView.fitHeight = 650
+    captainImageView.setStyle("-fx-border-color: " + borderColor.toString + "; -fx-border-width: 5px;")
+    captainImageView.setStyle("-fx-border-radius: 15px;")
 
-    val pirateImage = new Image(getClass.getResource("/pirate.jpg").toString)
+
+    val pirateImage = new Image(getClass.getResource("/enhancedPirate.png").toString)
     val pirateImageView = new ImageView(pirateImage)
     pirateImageView.fitWidth = 400
-    pirateImageView.fitHeight = 620
+    pirateImageView.fitHeight = 650
+    pirateImageView.setStyle("-fx-border-color: " + borderColor.toString + "; -fx-border-width: 5px;")
+    pirateImageView.setStyle("-fx-border-radius: 15px;")
 
 
-    val backgroundImage = new Image(getClass.getResource("/ocean.jpg").toString)
+    val backgroundImage = new Image(getClass.getResource("/back2.jpg").toString)
     val backgroundImageView = new ImageView(backgroundImage)
     // Set the background of the Scene using the ImageView
-    backgroundImageView.fitWidth = 1200 // Set the width of the image to the stage width
-    backgroundImageView.fitHeight = 1000 // Set the height of the image to the stage height
+    backgroundImageView.fitWidth = 1300 // Set the width of the image to the stage width
+    backgroundImageView.fitHeight = 800 // Set the height of the image to the stage height
 
     val coordinate = mutable.ListBuffer[(Int, Int)]()
 
@@ -581,8 +589,9 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
 
     stage = new PrimaryStage {
       title = "HTWG Battleship"
-      width = 1200
-      height = 1000
+      width = 1300
+      height = 800
+      resizable = false
       scene = new Scene {
         root = stackPane
       }
