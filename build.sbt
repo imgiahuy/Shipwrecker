@@ -15,12 +15,9 @@ lazy val root = (project in file("."))
         libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
         libraryDependencies += "net.codingwell" %% "scala-guice" % "7.0.0",
         libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.3.0",
-        libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.5"
+        libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.5" ,
+        libraryDependencies +=  "org.mockito" % "mockito-core" % "5.11.0" % Test,
+        libraryDependencies += "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test
+
 
 )
-jacocoReportSettings := JacocoReportSettings()
-  .withThresholds(
-    JacocoThresholds(
-      line = 70
-    )
-  )

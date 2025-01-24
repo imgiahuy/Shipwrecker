@@ -1,92 +1,143 @@
 package model
 
-import model.*
-import model.GameboardComponent.GameBaseImpl.{Cell, GameBoard, Value}
-import Value.*
-import model.GameboardComponent.GameBaseImpl.shipModel.SimpleShipFactory
+import model.GameboardComponent.GameBaseImpl.GameBoard
+import model.PlayerComponent.PlayerInterface
+import model.GameboardComponent.GameBaseImpl.Value.*
+import model.GameboardComponent.GameBaseImpl.shipModel.ShipInterface
+import model.GameboardComponent.{CellInterface, GameBoardInterface}
+import org.mockito.Mockito.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
+import model.GameboardComponent.GameBaseImpl.Cell
 
-class GameBoardSpec extends AnyWordSpec with Matchers {
+class GameBoardSpec extends AnyWordSpec with Matchers with MockitoSugar {
 
   "A GameBoard" should {
 
-    "be initialized with the correct size and default cells" in {
-      val gameBoard = new GameBoard(4)
-      val expectedBoard = Array(
-        Array(Cell(☐), Cell(☐), Cell(☐), Cell(☐)),
-        Array(Cell(☐), Cell(☐), Cell(☐), Cell(☐)),
-        Array(Cell(☐), Cell(☐), Cell(☐), Cell(☐)),
-        Array(Cell(☐), Cell(☐), Cell(☐), Cell(☐))
-      )
-      gameBoard.cells.cells shouldEqual expectedBoard
+    val mockPlayer = mock[PlayerInterface]
+    val mockShip = mock[ShipInterface]
+    val gameBoard = new GameBoard(5) // Creating a 5x5 board
+
+    // Mock ship size
+    when(mockShip.sizeOf()).thenReturn(3)
+
+    "place a ship on valid positions" in {
+      // Valid positions for ship placement
+      val positions = List((1, 1), (1, 2), (1, 3))
+
+      // Call placeShip method
+      val updatedBoard = gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(X))
+
+      // Verify ship placement (the value in the cells should be X)
+      updatedBoard.getCellValue(1, 1) shouldEqual X
+      updatedBoard.getCellValue(1, 2) shouldEqual X
+      updatedBoard.getCellValue(1, 3) shouldEqual X
     }
 
-    "not place a ship when ship size > 5 or ship size < 2" in {
-      val ship = SimpleShipFactory().createShip(6)
-      val ship2 = SimpleShipFactory().createShip(-1)
-      val gameBoard = new GameBoard(5)
-      gameBoard.placeShip(ship,(1,1), "h") should be(false)
-      gameBoard.placeShip(ship2, (1,1), "h") should be(false)
+    "not place a ship if the positions are invalid (out of bounds)" in {
+      // Invalid positions (out of bounds)
+      val invalidPositions = List((5, 5), (5, 6), (5, 7))
+
+      // Call placeShip method
+      val updatedBoard = gameBoard.placeShip(mockPlayer, Some(mockShip), invalidPositions, Cell(X))
+
+      // Ensure the board is not updated (cell value should be ☐)
+      updatedBoard.getCellValue(5, 5) shouldEqual ☐
     }
 
-    "place a ship vertically on the board" in {
-      val gameBoard = new GameBoard(5)
-      val ship = SimpleShipFactory().createShip(3) // Ship with 3 cells
-      gameBoard.placeShip(ship, (1, 1), richtung = "v") // Horizontal placement at (1,1)
-      gameBoard.cells.cells(1)(1) shouldEqual Cell(Value.O)
-      gameBoard.cells.cells(2)(1) shouldEqual Cell(Value.O)
-      gameBoard.cells.cells(3)(1) shouldEqual Cell(Value.O)
+    "not place a ship if the positions overlap" in {
+      // Valid positions for ship placement
+      val positions = List((1, 1), (1, 2), (1, 3))
+
+      // Place a ship at positions
+      gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(X))
+
+      // Attempt to place another ship at the same positions
+      val updatedBoard = gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(O))
+
+      // Ensure the original ship still occupies the positions (X should remain)
+      updatedBoard.getCellValue(1, 1) shouldEqual X
+      updatedBoard.getCellValue(1, 2) shouldEqual X
+      updatedBoard.getCellValue(1, 3) shouldEqual X
     }
 
-    "place a ship horizontally on the board" in {
-      val gameBoard = new GameBoard(5)
-      val ship = SimpleShipFactory().createShip(2) // Ship with 2 cells
-      gameBoard.placeShip(ship, (0, 0), richtung = "h") // Vertical placement at (0,0)
-      gameBoard.cells.cells(0)(0) shouldEqual Cell(O)
-      gameBoard.cells.cells(0)(1) shouldEqual Cell(O)
+    "ensure the ship placement is valid when positions are in the same row or column" in {
+      // Valid horizontal placement
+      val horizontalPositions = List((1, 1), (1, 2), (1, 3))
+
+      // Valid vertical placement
+      val verticalPositions = List((1, 1), (2, 1), (3, 1))
+
+      // Check that the ship can be placed in both horizontal and vertical
+      gameBoard.isPlacementValid(mockShip, horizontalPositions) shouldEqual true
+      gameBoard.isPlacementValid(mockShip, verticalPositions) shouldEqual true
     }
 
-    "not place a ship if the starting cell is occupied" in {
-      val gameBoard = new GameBoard(4)
-      val ship1 = SimpleShipFactory().createShip(2)
-      gameBoard.placeShip(ship1, (1, 1), richtung = "h")
+    "ensure the ship placement is invalid if positions are not aligned" in {
+      // Invalid placement (not all positions are aligned in a row or column)
+      val invalidPositions = List((1, 1), (2, 2), (3, 3))
 
-      val ship2 = new SimpleShipFactory().createShip(2)
-      gameBoard.placeShip(ship2, (1, 1), richtung = "h") should be (false) // Ship should not be placed
+      gameBoard.isPlacementValid(mockShip, invalidPositions) shouldEqual false
     }
 
-    "hit a ship and mark it as hit" in {
-      val gameBoard = new GameBoard(4)
-      val ship = SimpleShipFactory().createShip(2)
-      gameBoard.placeShip(ship, (0, 0), richtung = "v")
+    "hit a ship correctly" in {
+      // First, place a ship on the board
+      val positions = List((1, 1), (1, 2), (1, 3))
+      gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(X))
 
-      gameBoard.hit((0, 0)) shouldEqual true
-    }
+      // Test a successful hit
+      gameBoard.hit((1, 1)) shouldEqual true
 
-    "miss a ship if hitting an empty cell" in {
-      val gameBoard = new GameBoard(4)
+      // Test a missed hit (hitting an empty cell)
       gameBoard.hit((0, 0)) shouldEqual false
     }
 
-    "clean the board by resetting all cells" in {
-      val gameBoard = new GameBoard(4)
-      val ship = SimpleShipFactory().createShip(2)
-      gameBoard.placeShip(ship, (0, 0), richtung = "h")
+    "return the correct positions of placed ships" in {
+      // Place a ship
+      val positions = List((1, 1), (1, 2), (1, 3))
+      gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(X))
 
-      gameBoard.clean()
-      gameBoard.cells.cells.flatten shouldEqual Array.fill(16)(Cell(Value.☐)) // All cells should be reset to Cell(0)
+      // Ensure the correct ship positions are returned
+      gameBoard.getShipPositions should contain allOf ((1, 1), (1, 2), (1, 3))
     }
 
-    "copy the current state of the board" in {
-      val gameBoard = new GameBoard(3)
-      val ship = SimpleShipFactory().createShip(2)
-      gameBoard.placeShip(ship, (0, 0), richtung = "v")
+    "allow the board to be cleaned" in {
+      // Place a ship before cleaning
+      val positions = List((1, 1), (1, 2), (1, 3))
+      gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(X))
 
+      // Clean the board
+      gameBoard.clean()
+
+      // Ensure all cells are reset to ☐
+      gameBoard.getCellValue(1, 1) shouldEqual ☐
+      gameBoard.getCellValue(1, 2) shouldEqual ☐
+      gameBoard.getCellValue(1, 3) shouldEqual ☐
+    }
+
+    "copy the board correctly" in {
+      // Place a ship
+      val positions = List((1, 1), (1, 2), (1, 3))
+      gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(X))
+
+      // Copy the board
       val copiedBoard = gameBoard.copyBoard()
-      copiedBoard.cells.cells(0)(0) shouldEqual Cell(O)
-      copiedBoard.cells.cells(1)(0) shouldEqual Cell(O)
-      copiedBoard.cells.cells(2)(0) shouldEqual Cell(☐)
+
+      // Ensure the copied board has the same state as the original
+      copiedBoard.getCellValue(1, 1) shouldEqual X
+      copiedBoard.getCellValue(1, 2) shouldEqual X
+      copiedBoard.getCellValue(1, 3) shouldEqual X
+    }
+
+    "return correct attack positions" in {
+      // Place ships on the board
+      val positions = List((1, 1), (1, 2), (1, 3))
+      gameBoard.placeShip(mockPlayer, Some(mockShip), positions, Cell(X))
+
+      // Check the attack positions
+      val attackPositions = gameBoard.getAttackPositions
+      attackPositions should contain allOf ((1, 1), (1, 2), (1, 3))
     }
   }
 }

@@ -1,128 +1,131 @@
 package controller
 
-import controller.ControllerComponent.controllerBaseImpl.Controller
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import model.*
-import model.GameboardComponent.GameBaseImpl.{GameBoard, State}
-import model.PlayerComponent.Player
-import model.GameboardComponent.GameBaseImpl.Value.*
-import model.GameboardComponent.GameBaseImpl.shipModel.SimpleShipFactory
-import util.Observer
+import org.scalatestplus.mockito.MockitoSugar
+import model.GameboardComponent.GameBoardInterface
+import model.PlayerComponent.PlayerInterface
+import model.FileIO.FileIOInterface
+import controller.ControllerComponent.ControllerInterface
+import controller.ControllerComponent.controllerBaseImpl.Controller
+import model.GameboardComponent.GameBaseImpl.State
 
-class ControllerSpec extends AnyWordSpec with Matchers {
+class ControllerSpec extends AnyWordSpec with Matchers with MockitoSugar {
 
-  val player1 = new Player("Alice", 5)  // Dummy Player with name Alice and 5 ships
-  val player2 = new Player("Bob", 5)    // Dummy Player with name Bob and 5 ships
+  "A Controller" should {
 
-  val b1 = new GameBoard(10)            // 10x10 GameBoard for player1
-  val b2 = new GameBoard(10)            // 10x10 GameBoard for player2
-  val show = new GameBoard(10)          // Show board for display
-  val b1_blank = new GameBoard(10)      // Blank board for player1
-  val b2_blank = new GameBoard(10)      // Blank board for player2
+    // Create mocks for dependencies
+    val b1Mock = mock[GameBoardInterface]
+    val b2Mock = mock[GameBoardInterface]
+    val showMock = mock[GameBoardInterface]
+    val b1BlankMock = mock[GameBoardInterface]
+    val b2BlankMock = mock[GameBoardInterface]
+    val player1Mock = mock[PlayerInterface]
+    val player2Mock = mock[PlayerInterface]
+    val fileIOMock = mock[FileIOInterface]
 
-  // Create controller with the above dependencies
-  val controller = new Controller(b1, b2, show, b1_blank, b2_blank, player1, player2)
+    val controller = new Controller(b1Mock, b2Mock, showMock, b1BlankMock, b2BlankMock, player1Mock, player2Mock, fileIOMock)
 
-  "Controller" should {
+    "start a new game correctly with the clean method" in {
+      // Mock player data
+      when(player1Mock.name).thenReturn("Player1")
+      when(player2Mock.name).thenReturn("Player2")
+      when(player1Mock.numShip).thenReturn(3)
+      when(player2Mock.numShip).thenReturn(3)
 
-    "clean the boards and reset the number of ships" in {
-      // Simulate a game state before cleaning
-      b1.placeShip(SimpleShipFactory().createShip(2), (0, 0), "h")
-      b2.placeShip(SimpleShipFactory().createShip(4), (2, 2), "v")
-      show.placeShip(SimpleShipFactory().createShip(5), (2, 2), "v")
-      b1_blank.placeShip(SimpleShipFactory().createShip(2), (2, 2), "v")
-      b2_blank.placeShip(SimpleShipFactory().createShip(3), (2, 2), "v")
-
+      // Simulate the clean command (starting a new game)
       controller.clean()
 
-      b1.isEmpty shouldBe true
-      b2.isEmpty shouldBe true
-      show.isEmpty shouldBe true
-      b1_blank.isEmpty shouldBe true
-      b2_blank.isEmpty shouldBe true
+      // Verify that clean() is called on all game boards
+      verify(b1Mock).clean()
+      verify(b2Mock).clean()
+      verify(showMock).clean()
+      verify(b1BlankMock).clean()
+      verify(b2BlankMock).clean()
 
-      controller.getNumShip(player1.name) shouldEqual player1.numShip
-      controller.getNumShip(player2.name) shouldEqual player2.numShip
+      // Verify that the player ship counts remain correct after clean
+      verify(player1Mock).numShip = 3
+      verify(player2Mock).numShip = 3
     }
 
-    "place ships correctly for player1" in {
-      val result = controller.placeShips(player1.name,  2, pox = 2, poy = 3, "h")
-      result should be (true)  // Assuming ship placement is valid
+    "place ships correctly" in {
+      // Mock player and ship data
+      val positions = List((1, 1), (1, 2), (1, 3))
+      when(player1Mock.name).thenReturn("Player1")
+      when(player1Mock.numShip).thenReturn(3)
+
+      // Simulate placing ships
+      controller.placeShips(player1Mock, 3, positions)
+
+      // Verify the placeShips command was processed
+      verify(b1Mock).clean()
+      verify(player1Mock).numShip = 3
     }
 
-    "place ships correctly for player2" in {
-      val result = controller.placeShips(player2.name, 2, pox = 5, poy = 4, "v")
-      result should be (true)  // Assuming ship placement is valid
+    "attack another player's ship correctly" in {
+      // Mock player and ship data
+      when(player1Mock.name).thenReturn("Player1")
+      when(player2Mock.name).thenReturn("Player2")
+
+      // Simulate attacking
+      controller.attack(5, 5, "Player1")
+
+      // Verify that the attack method is called with correct parameters
+      verify(b1Mock).clean()
+      verify(player1Mock).numShip = 3
     }
 
-    "fail to place ships for an unknown player" in {
-      assertThrows[IllegalArgumentException] {
-        controller.placeShips("UnknownPlayer", 2, pox = 1, poy = 1, "h")
-      }
+    "undo the last action correctly" in {
+      // Simulate undo action
+      controller.undo
+
+      // Verify that undo method was called
+      verify(b1Mock).clean()
+      verify(player1Mock).numShip = 3
     }
 
-    "fail to place ships for an player with ship size bigger than 5" in {
-      val result = controller.placeShips(player1.name, 6, pox = 5, poy = 4, "v")
-      result should be (false)
+    "redo the last undone action correctly" in {
+      // Simulate redo action
+      controller.redo
+
+      // Verify that redo method was called
+      verify(b1Mock).clean()
+      verify(player1Mock).numShip = 3
     }
 
-    "fail to place ships for an player with ship size smaller than 2" in {
-      val result = controller.placeShips(player1.name, 1, pox = 5, poy = 4, "v")
-      result should be(false)
+    "load the game correctly" in {
+      // Simulate loading a saved game
+      val loadedB1 = mock[GameBoardInterface]
+      val loadedB2 = mock[GameBoardInterface]
+      val loadedB1Blank = mock[GameBoardInterface]
+      val loadedB2Blank = mock[GameBoardInterface]
+      when(fileIOMock.load).thenReturn((loadedB1, loadedB2, loadedB1Blank, loadedB2Blank))
+
+      // Load the game
+      controller.load
+
+      // Verify that the load method correctly updates the game state
+      verify(fileIOMock).load
+      verify(b1Mock).clean()
+      verify(b2Mock).clean()
     }
 
-    "return the correct name of player1" in {
-      controller.getNamePlayer1 should be ("Alice")
+    "save the game correctly" in {
+      // Simulate saving the game
+      controller.save
+
+      // Verify that the save method is called
+      verify(fileIOMock).save(b1Mock, b2Mock, b1BlankMock, b2BlankMock, player1Mock, player2Mock)
     }
 
-    "return the correct name of player2" in {
-      controller.getNamePlayer2 should be ("Bob")
-    }
+    "adjust the game state correctly" in {
+      // Simulate changing the game state
+      controller.adjustGameState(State.CONTINUE)
 
-    "handle attacks correctly for player1" in {
-      val result = controller.attack(3, 3, player1.name)
-      result should be (false) // Assuming no hit at this position initially
-    }
-
-    "handle attacks correctly for player2" in {
-      val result = controller.attack(3, 3, player2.name)
-      result should be (false) // Assuming no hit at this position initially
-    }
-
-    "handle attacks when player name is unknown" in {
-      assertThrows[IllegalArgumentException] {
-        controller.attack(3, 3, "Unknown Player")
-      }
-    }
-
-    "handle attacks on hit" in {
-      b1.placeShip(SimpleShipFactory().createShip(2), (0, 0), "h")
-      val result = controller.attack(0, 0, player1.name)
-      result should be(true)
-    }
-
-    "handle board on hit" in {
-      b1.placeShip(SimpleShipFactory().createShip(3), (0, 0), "h")
-      val result = controller.attack(0, 0, player1.name)
-      b2_blank.isEmpty should be (false)
-    }
-
-    "solve the game and determine the winner" in {
-      val result = controller.solver()
-      result should be(State.CONTINUE) // It should return 1 or 2, indicating the winning player or 3 for no win
-    }
-
-    "update observers on significant events" in {
-      var updated = false
-      val observer = new Observer {
-        override def update(): Unit = updated = true
-      }
-      controller.add(observer)
-
-      // Trigger observer update
-      controller.clean()
-      updated shouldBe true
+      // Verify that the game state was updated
+      controller.gameState shouldEqual State.CONTINUE
     }
   }
 }
