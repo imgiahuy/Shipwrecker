@@ -21,8 +21,9 @@ jobs:
       - name: Install sbt
         run: |
           echo "Installing sbt..."
-          curl -sL https://scala-ci.typesafe.com/download/1.5.5/sbt-1.5.5.tgz | tar xz
-          sudo mv sbt /usr/local/bin
+          curl -sL https://dl.bintray.com/sbt/debian/sbt-1.5.5.deb -o sbt.deb
+          sudo dpkg -i sbt.deb
+          sudo apt-get install -f
       - name: compile
         run: sbt compile
       - name: run tests
@@ -40,8 +41,9 @@ jobs:
      - name: Install sbt
        run: |
          echo "Installing sbt..."
-         curl -sL https://scala-ci.typesafe.com/download/1.5.5/sbt-1.5.5.tgz | tar xz
-         sudo mv sbt /usr/local/bin
+         curl -sL https://dl.bintray.com/sbt/debian/sbt-1.5.5.deb -o sbt.deb
+         sudo dpkg -i sbt.deb
+         sudo apt-get install -f
      - name: Build Project and export Coverage
        env:
          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
