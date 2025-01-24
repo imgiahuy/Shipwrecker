@@ -21,10 +21,8 @@ jobs:
       - name: Install sbt
         run: |
           echo "Installing sbt..."
-          echo "deb https://dl.cloudsmith.io/public/sbt/sbt-debian-debian10/ubuntu stable main" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-          curl -sL https://dl.cloudsmith.io/public/sbt/sbt-debian-debian10/gpg.62ED0F57.key | sudo tee /etc/apt/trusted.gpg.d/sbt.asc
-          sudo apt-get update
-          sudo apt-get install sbt
+          curl -sL https://raw.githubusercontent.com/sbt/sbt/master/build/sbt-dist.sh | bash
+          sudo mv sbt /usr/local/bin
       - name: compile
         run: sbt compile
       - name: run tests
@@ -42,10 +40,8 @@ jobs:
      - name: Install sbt
        run: |
          echo "Installing sbt..."
-         echo "deb https://dl.cloudsmith.io/public/sbt/sbt-debian-debian10/ubuntu stable main" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-         curl -sL https://dl.cloudsmith.io/public/sbt/sbt-debian-debian10/gpg.62ED0F57.key | sudo tee /etc/apt/trusted.gpg.d/sbt.asc
-         sudo apt-get update
-         sudo apt-get install sbt
+         curl -sL https://raw.githubusercontent.com/sbt/sbt/master/build/sbt-dist.sh | bash
+         sudo mv sbt /usr/local/bin
      - name: Build Project and export Coverage
        env:
          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
