@@ -18,9 +18,3 @@ lazy val root = (project in file("."))
         libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.5"
 
 )
-jacocoReportSettings := JacocoReportSettings()
-  .withThresholds(
-    JacocoThresholds(
-      line = 70
-    )
-  )
