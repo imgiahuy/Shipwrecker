@@ -65,7 +65,7 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
     val loadButtonImg = new Image(getClass.getResource("/load.png").toString)
     val loadButtonImageView = new ImageView(loadButtonImg)
 
-    val saveButtonImg = new Image(getClass.getResource("/save1.png").toString)
+    val saveButtonImg = new Image(getClass.getResource("/save.png").toString)
     val saveButtonImageView = new ImageView(saveButtonImg)
 
 
