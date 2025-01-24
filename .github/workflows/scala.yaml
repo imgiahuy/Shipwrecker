@@ -21,8 +21,12 @@ jobs:
       - name: Install sbt
         run: |
           echo "Installing sbt..."
-          curl -sL https://raw.githubusercontent.com/sbt/sbt/master/build/sbt-dist.sh | bash
-          sudo mv sbt /usr/local/bin
+          sudo apt update
+          sudo apt install -y apt-transport-https curl
+          echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+          curl -sL https://keybase.io/sbt/pgp_keys.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/sbt.gpg
+          sudo apt update
+          sudo apt install -y sbt
       - name: compile
         run: sbt compile
       - name: run tests
@@ -40,8 +44,12 @@ jobs:
      - name: Install sbt
        run: |
          echo "Installing sbt..."
-         curl -sL https://raw.githubusercontent.com/sbt/sbt/master/build/sbt-dist.sh | bash
-         sudo mv sbt /usr/local/bin
+         sudo apt update
+         sudo apt install -y apt-transport-https curl
+         echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+         curl -sL https://keybase.io/sbt/pgp_keys.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/sbt.gpg
+         sudo apt update
+         sudo apt install -y sbt
      - name: Build Project and export Coverage
        env:
          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
