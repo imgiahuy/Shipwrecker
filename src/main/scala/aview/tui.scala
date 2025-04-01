@@ -1,7 +1,7 @@
 package aview
 
 import controller.ControllerComponent.ControllerInterface
-
+import model.PlayerComponent.PlayerInterface
 
 import scala.io.StdIn.*
 
@@ -44,6 +44,24 @@ class tui(controller: ControllerInterface) extends TuiTemplate(controller) {
     }
   }
 
+  private def validatePlayer(playerName: String)(controller: ControllerInterface): Option[PlayerInterface] = {
+    if (playerName == controller.getNamePlayer1) Some(controller.getPlayer1)
+    else if (playerName == controller.getNamePlayer2) Some(controller.getPlayer2)
+    else None
+  }
+
+  private def validateShipSize(shipSizeStr: String): Option[Int] = {
+    shipSizeStr.toIntOption.filter(size => size >= 2 && size <= 5)
+  }
+
+  private def parsePosition(posStr: String): Option[(Int, Int)] = {
+    val pattern = """\((\d+),\s*(\d+)\)""".r
+    posStr match {
+      case pattern(x, y) => Some((x.toInt, y.toInt))
+      case _ => None
+    }
+  }
+
   private def processPlaceShip(commandArgs: String): Unit = {
     val args = commandArgs.split(" ")
 
@@ -53,45 +71,37 @@ class tui(controller: ControllerInterface) extends TuiTemplate(controller) {
       return
     }
 
-    val Array(playerName, shipSizeStr, positionsStr @_*) = args
+    val Array(playerName, shipSizeStr, positionsStr@_*) = args
 
     // Validate player name
-    val player = if (playerName == controller.getNamePlayer1) {
-      controller.getPlayer1
-    } else if (playerName == controller.getNamePlayer2) {
-      controller.getPlayer2
-    } else {
-      println(s"Unknown player: $playerName. Please enter a valid name.")
-      return
-    }
-
-    // Validate ship size
-    val shipSize = shipSizeStr.toIntOption match {
-      case Some(size) if size >= 2 && size <= 5 => size
-      case _ =>
-        println("Invalid ship size. Use one of: 2, 3, 4, 5")
-        return
-    }
-    // Parse positions
-    val positions = positionsStr.map(parsePosition).toList
-
-    // Check if the ship can be placed
-    if (player.numShip > 0) {
-      // Place the ship
-      controller.placeShips(player, shipSize, positions)
-    } else {
-      println(s"$playerName, you've already placed all your ships.")
+    validatePlayer(playerName)(controller) match {
+      case Some(player) =>
+        // Validate ship size
+        validateShipSize(shipSizeStr) match {
+          case Some(shipSize) =>
+            // Parse positions
+            val positions = positionsStr.flatMap(parsePosition).toList
+            if (player.numShip > 0) {
+              // Place the ship
+              controller.placeShips(player, shipSize, positions)
+            } else {
+              println(s"$playerName, you've already placed all your ships.")
+            }
+          case None =>
+            println("Invalid ship size. Use one of: 2, 3, 4, 5")
+        }
+      case None =>
+        println(s"Unknown player: $playerName. Please enter a valid name.")
     }
   }
 
-  // Parse position string like (5,7) to (5, 7)
-  private def parsePosition(posStr: String): (Int, Int) = {
-    val pattern = """\((\d+),\s*(\d+)\)""".r
-    posStr match {
-      case pattern(x, y) => (x.toInt, y.toInt)
-      case _ =>
-        println(s"Invalid position format: $posStr. Expected format is (x, y).")
-        (-1, -1) // Invalid position
+  private def validateAttacker(attackerName: String)(controller: ControllerInterface): Option[(PlayerInterface, PlayerInterface)] = {
+    if (attackerName == controller.getNamePlayer1) {
+      Some(controller.getPlayer1, controller.getPlayer2)
+    } else if (attackerName == controller.getNamePlayer2) {
+      Some(controller.getPlayer2, controller.getPlayer1)
+    } else {
+      None
     }
   }
 
@@ -107,24 +117,23 @@ class tui(controller: ControllerInterface) extends TuiTemplate(controller) {
     val Array(attackerName, poxStr, poyStr) = args
 
     // Validate attacker name
-    val (attacker, defender) = if (attackerName == controller.getNamePlayer1) {
-      (controller.getPlayer1, controller.getPlayer2)
-    } else if (attackerName == controller.getNamePlayer2) {
-      (controller.getPlayer2, controller.getPlayer1)
-    } else {
-      println(s"Unknown attacker: $attackerName. Please enter a valid name.")
-      return
-    }
+    validateAttacker(attackerName)(controller) match {
+      case Some((attacker, defender)) =>
+        val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
+          case (Some(x), Some(y)) => (x, y)
+          case _ =>
+            println("Invalid coordinates. Ensure both x and y are integers.")
+            return
+        }
 
-    val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
-      case (Some(x), Some(y)) => (x, y)
-      case _ =>
-        println("Invalid coordinates. Ensure both x and y are integers.")
-        return
-    }
+        // Perform the attack
+        println(s"$attackerName attacks ${defender.name} at ($pox, $poy)!")
+        controller.attack(pox, poy, defender.name)
 
-    // Perform the attack
-    println(s"$attackerName attacks ${defender.name} at ($pox, $poy)!")
-    controller.attack(pox, poy, defender.name)
+      case None =>
+        println(s"Unknown attacker: $attackerName. Please enter a valid name.")
+    }
   }
+
+
 }

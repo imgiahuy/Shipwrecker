@@ -3,30 +3,18 @@ package model.GameboardComponent.GameBaseImpl
 import model.GameboardComponent.GameBoardInterface
 
 case class Solver() {
-  // Method to compare two GameBoard objects
   def solved(board1: GameBoardInterface, board2: GameBoardInterface): Boolean = {
-    // Check if either board is empty (which could mean the game is not over)
-    if (board1.isEmpty || board2.isEmpty) {
+    // Return false if boards are empty or have different sizes
+    if (board1.isEmpty || board2.isEmpty || board1.getCellSize != board2.getCellSize) {
       return false
     }
 
-    // Check if the boards have the same size
-    if (board1.getCellSize != board2.getCellSize) {
-      return false
-    }
-
-    val size = board1.getCellSize
-    for (row <- 0 until size) {
-      for (col <- 0 until size) {
-        val cell1 = board1.getCellValue(row, col)
-        val cell2 = board2.getCellValue(row, col)
-
-        if (cell1 != cell2) {
-          return false
-        }
+    // Compare cells of both boards
+    (0 until board1.getCellSize).forall { row =>
+      (0 until board1.getCellSize).forall { col =>
+        board1.getCellValue(row, col) == board2.getCellValue(row, col)
       }
     }
-    // If all checks pass, the boards are solved
-    true
   }
 }
+

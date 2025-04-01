@@ -36,6 +36,8 @@ trait GameBoardInterface {
   
   def getCellSize: Int
   
+  def createEmptyBoard : GameBoardInterface
+  
 }
 
 trait CellInterface {}

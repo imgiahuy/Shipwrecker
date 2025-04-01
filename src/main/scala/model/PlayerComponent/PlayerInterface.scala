@@ -6,7 +6,7 @@ trait PlayerInterface {
   // Gibt die Anzahl der Schiffe des Spielers zurück
   def numShip: Int
 
-  def numShip_=(value: Int): Unit
+  def shipCounter: ShipCounter // Add this line
 
   // Verringert die Anzahl der Schiffe des Spielers um 1
   def decrease(): Unit

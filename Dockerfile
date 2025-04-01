@@ -25,7 +25,3 @@ RUN sbt update
 
 # Run SBT
 CMD ["sbt", "run"]
-
-# run:  docker run --rm -it --net=host --env DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev/dri:/dev/dri --device /dev/kfd:/dev/kfd Shipwrecker:v1 /bin/bash
-
-# run: docker run -e DISPLAY=host.docker.internal:0 -e XDG_RUNTIME_DIR=/tmp/runtime-docker -v /tmp/.X11-unix:/tmp/.X11-unix -ti Shipwrecker:v1 bash -c "mkdir -p /tmp/runtime-docker && chmod 700 /tmp/runtime-docker && your_program_command"
