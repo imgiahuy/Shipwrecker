@@ -3,7 +3,7 @@ package ShipwreckerMain
 import aview.{gui, tui}
 import com.google.inject.Guice
 import controller.ControllerComponent.ControllerInterface
-import model.*
+
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

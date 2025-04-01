@@ -11,28 +11,22 @@ import play.api.libs.json.*
 
 import java.io.*
 
-class FileIOJSON @Inject() (var gameboard: GameBoardInterface) extends FileIOInterface {
+class FileIOJSON @Inject() (val gameboard: GameBoardInterface) extends FileIOInterface {
 
-  override def load: (GameBoardInterface, GameBoardInterface, GameBoardInterface, GameBoardInterface) = {
-    var b1: GameBoardInterface = null
-    var b1_blank: GameBoardInterface = null
-    var b2: GameBoardInterface = null
-    var b2_blank: GameBoardInterface = null
+  override def load: (GameBoardInterface, GameBoardInterface, GameBoardInterface, GameBoardInterface, Int, Int) = {
 
-    var player1: PlayerInterface = null
-    var player2: PlayerInterface = null
+    val b1: GameBoardInterface = gameboard.createEmptyBoard
+    val b1_blank: GameBoardInterface = gameboard.createEmptyBoard
+    val b2: GameBoardInterface = gameboard.createEmptyBoard
+    val b2_blank: GameBoardInterface = gameboard.createEmptyBoard
+
+    val player1: Int = getPlayer1ShipCount
+    val player2: Int = getPlayer2ShipCount
 
     val file = scala.io.Source.fromFile("game.json").mkString
     val json = Json.parse(file)
-    val injector = Guice.createInjector(new ShipwreckerModule)
+    val injector = Guice.createInjector( new ShipwreckerModule)
 
-    // Ship number for player 1
-    val shipNum1 = (json \ "gameInfo" \ "ShipNumber1").as[Int]
-    player1.numShip = shipNum1
-
-    // Ship number for player 2
-    val shipNum2 = (json \ "gameInfo" \ "ShipNumber2").as[Int]
-    player2.numShip = shipNum2
 
     // Load cells for all boards
     loadCells((json \ "board" \ "b1" \ "cell").as[JsArray], b1)
@@ -40,7 +34,7 @@ class FileIOJSON @Inject() (var gameboard: GameBoardInterface) extends FileIOInt
     loadCells((json \ "board" \ "b1_blank" \ "cell").as[JsArray], b1_blank)
     loadCells((json \ "board" \ "b2_blank" \ "cell").as[JsArray], b2_blank)
 
-    (b1, b2, b1_blank, b2_blank)
+    (b1, b2, b1_blank, b2_blank, player1, player2)
   }
 
   // Helper function to load cells into a board

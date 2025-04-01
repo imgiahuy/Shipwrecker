@@ -10,9 +10,9 @@ import model.PlayerComponent.PlayerInterface
 
 import scala.xml.{Elem, NodeSeq, PrettyPrinter}
 
-class FileIOXML @Inject() (var gameboard: GameBoardInterface)  extends FileIOInterface {
+class FileIOXML @Inject() (val gameboard: GameBoardInterface)  extends FileIOInterface {
 
-  override def load: (GameBoardInterface, GameBoardInterface, GameBoardInterface, GameBoardInterface) = {
+  override def load: (GameBoardInterface, GameBoardInterface, GameBoardInterface, GameBoardInterface, Int, Int) = {
 
     val file = scala.xml.XML.loadFile("game.xml")
     val injector = Guice.createInjector(new ShipwreckerModule)
@@ -22,18 +22,8 @@ class FileIOXML @Inject() (var gameboard: GameBoardInterface)  extends FileIOInt
     val b2: GameBoardInterface = injector.getInstance(classOf[GameBoardInterface])
     val b2_blank: GameBoardInterface = injector.getInstance(classOf[GameBoardInterface])
 
-    val player1: PlayerInterface = injector.getInstance(classOf[PlayerInterface])
-    val player2: PlayerInterface = injector.getInstance(classOf[PlayerInterface])
-
-    // Ship number for player 1
-    val shipAttr1 = file \\ "gameInfo" \ "@ShipNumber1"
-    val shipNum1 = shipAttr1.text.toInt
-    player1.numShip = shipNum1
-
-    // Ship number for player 2
-    val shipAttr2 = file \\ "gameInfo" \ "@ShipNumber2"
-    val shipNum2 = shipAttr2.text.toInt
-    player2.numShip = shipNum2
+    val player1: Int = getPlayer1ShipCount
+    val player2: Int = getPlayer2ShipCount
 
     // Load cells for all boards
     val cell_b1 = file \\ "board" \ "b1" \\ "cell"
@@ -47,7 +37,7 @@ class FileIOXML @Inject() (var gameboard: GameBoardInterface)  extends FileIOInt
     loadCells(cell_b1_blank, b1_blank)
     loadCells(cell_b2_blank, b2_blank)
 
-    (b1, b2, b1_blank, b2_blank)
+    (b1, b2, b1_blank, b2_blank, player1, player2)
   }
 
   // Helper function to load cells into a board

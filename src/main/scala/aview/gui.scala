@@ -25,12 +25,54 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
   private val buttonMap2: mutable.Map[(Int, Int), Button] = mutable.Map()
   private val buttonMapAttack1: mutable.Map[(Int, Int), Button] = mutable.Map()
   private val buttonMapAttack2: mutable.Map[(Int, Int), Button] = mutable.Map()
-  var borderPanel: BorderPane = _
-  var messageLabel: Label =_
+  private var borderPanel: BorderPane = _
+  private var messageLabel: Label =_
+  private val coordinate = mutable.ListBuffer[(Int, Int)]()
+  private val gridSize = 12
+  private val buttonSize = 50 //adjust later
 
 
   private var whoIs : Boolean = true
   private var attackMode : Boolean = false
+
+  private def createGrid() : GridPane = {
+    new GridPane {
+      hgap = 0
+      vgap = 0
+      padding = Insets(20)
+      alignment = TopLeft
+    }
+  }
+
+  private def createGridButtons(grid: GridPane, buttonMap: mutable.Map[(Int, Int), Button], gridSize: Int, buttonSize: Double): Unit = {
+    for (row <- 0 until gridSize; col <- 0 until gridSize) {
+      val button: Button = new Button(s"$row,$col") {
+        // Ensure the button is a square
+        minWidth = buttonSize
+        minHeight = buttonSize
+        maxWidth = buttonSize
+        maxHeight = buttonSize
+        style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
+        var isClicked = false
+
+        // Add click behavior
+        onAction = _ =>
+          if (isClicked) {
+            // Reset the button to its original color when clicked again
+            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
+            coordinate -= ((row, col))
+          } else {
+            // Change the color of the button when clicked
+            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: red;"
+            coordinate += ((row, col))
+          }
+          isClicked = !isClicked // Toggle the state
+          println(coordinate)
+      }
+      grid.add(button, col, row)
+      buttonMap((row, col)) = button
+    }
+  }
 
 
   override def start(): Unit = {
@@ -94,162 +136,15 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
     backgroundImageView.fitWidth = 1300 // Set the width of the image to the stage width
     backgroundImageView.fitHeight = 800 // Set the height of the image to the stage height
 
-    val coordinate = mutable.ListBuffer[(Int, Int)]()
+    val grid: GridPane = createGrid()
+    val grid2: GridPane = createGrid()
+    val gridAttack1: GridPane = createGrid()
+    val gridAttack2: GridPane = createGrid()
 
-    var clickCount = 0
-
-
-    val gridSize = 12
-    val buttonSize = 50 //adjust later
-
-    val grid: GridPane = new GridPane {
-      hgap = 0
-      vgap = 0
-      padding = Insets(20)
-      alignment = TopLeft
-    }
-
-    val grid2: GridPane = new GridPane {
-      hgap = 0
-      vgap = 0
-      padding = Insets(20)
-      alignment = TopLeft
-    }
-
-    val gridAttack1: GridPane = new GridPane {
-      hgap = 0
-      vgap = 0
-      padding = Insets(20)
-      alignment = TopLeft
-    }
-
-    val gridAttack2: GridPane = new GridPane {
-      hgap = 0
-      vgap = 0
-      padding = Insets(20)
-      alignment = TopLeft
-    }
-
-
-    for (row <- 0 until gridSize; col <- 0 until gridSize) {
-      val button: Button = new Button(s"$row,$col") {
-        // Ensure the button is a square
-        minWidth = buttonSize
-        minHeight = buttonSize
-        maxWidth = buttonSize
-        maxHeight = buttonSize
-        style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-        var isClicked = false
-        // Add click behavior
-        onAction = _ =>
-          if (isClicked) {
-            // Reset the button to its original color when clicked again
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-            coordinate -= ((row, col))
-            clickCount -= 1
-          } else {
-            // Change the color of the button when clicked
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: red;"
-            coordinate += ((row, col))
-            clickCount += 1
-          }
-          isClicked = !isClicked // Toggle the state
-          println(coordinate)
-          println(clickCount)
-      }
-      grid.add(button, col, row)
-      buttonMap((row, col)) = button
-    }
-
-    for (row <- 0 until gridSize; col <- 0 until gridSize) {
-      val button: Button = new Button(s"$row,$col") {
-        // Ensure the button is a square
-        minWidth = buttonSize
-        minHeight = buttonSize
-        maxWidth = buttonSize
-        maxHeight = buttonSize
-        style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-        var isClicked = false
-        // Add click behavior
-        onAction = _ =>
-          if (isClicked) {
-            // Reset the button to its original color when clicked again
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-            coordinate -= ((row, col))
-            clickCount -= 1
-          } else {
-            // Change the color of the button when clicked
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: red;"
-            coordinate += ((row, col))
-            clickCount += 1
-          }
-          isClicked = !isClicked // Toggle the state
-          println(coordinate)
-          println(clickCount)
-      }
-      grid2.add(button, col, row)
-      buttonMap2((row, col)) = button
-    }
-
-    for (row <- 0 until gridSize; col <- 0 until gridSize) {
-      val button: Button = new Button(s"$row,$col") {
-        // Ensure the button is a square
-        minWidth = buttonSize
-        minHeight = buttonSize
-        maxWidth = buttonSize
-        maxHeight = buttonSize
-        style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-        var isClicked = false
-        // Add click behavior
-        onAction = _ =>
-          if (isClicked) {
-            // Reset the button to its original color when clicked again
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-            coordinate -= ((row, col))
-            clickCount -= 1
-          } else {
-            // Change the color of the button when clicked
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: red;"
-            coordinate += ((row, col))
-            clickCount += 1
-          }
-          isClicked = !isClicked // Toggle the state
-          println(coordinate)
-          println(clickCount)
-      }
-      gridAttack1.add(button, col, row)
-      buttonMapAttack1((row, col)) = button
-    }
-
-    for (row <- 0 until gridSize; col <- 0 until gridSize) {
-      val button: Button = new Button(s"$row,$col") {
-        // Ensure the button is a square
-        minWidth = buttonSize
-        minHeight = buttonSize
-        maxWidth = buttonSize
-        maxHeight = buttonSize
-        style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-        var isClicked = false
-        // Add click behavior
-        onAction = _ =>
-          if (isClicked) {
-            // Reset the button to its original color when clicked again
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: transparent;"
-            coordinate -= ((row, col))
-            clickCount -= 1
-          } else {
-            // Change the color of the button when clicked
-            style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: red;"
-            coordinate += ((row, col))
-            clickCount += 1
-          }
-          isClicked = !isClicked // Toggle the state
-          println(coordinate)
-          println(clickCount)
-      }
-      gridAttack2.add(button, col, row)
-      buttonMapAttack2((row, col)) = button
-    }
+    createGridButtons(grid, buttonMap, gridSize, buttonSize)
+    createGridButtons(grid2, buttonMap2, gridSize, buttonSize)
+    createGridButtons(gridAttack1, buttonMapAttack1, gridSize, buttonSize)
+    createGridButtons(gridAttack2, buttonMapAttack2, gridSize, buttonSize)
 
     messageLabel = new Label("Game Status: Ready") {
       minWidth = 400  // Set a minimum width for the label
@@ -479,7 +374,7 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
       style = "-fx-background-color: transparent;"
 
       onAction = _ =>
-        val check = controller.solver()
+        val check: Unit = controller.solver()
         print(controller.getGameState)
     }
 
@@ -496,6 +391,42 @@ class gui (controller: ControllerInterface) extends JFXApp3, Observer {
 
       onAction = _ =>
         controller.load
+
+        val player1Ships = controller.getPlacedShips(controller.getPlayer1).toSet
+        val player2Ships = controller.getPlacedShips(controller.getPlayer2).toSet
+
+        // Update Player 1's ships on the board
+        player1Ships.foreach { case (row, col) =>
+          buttonMap((row, col)).style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: green;"
+          buttonMap((row, col)).disable = true
+        }
+
+        // Update Player 2's ships on the board
+        player2Ships.foreach { case (row, col) =>
+          buttonMap2((row, col)).style = "-fx-border-color: black; -fx-border-width: 1px; -fx-background-color: green;"
+          buttonMap2((row, col)).disable = true
+        }
+
+        // Update Player 1's attacked positions
+        val player1Attacks = controller.getAttackShips(controller.getPlayer1)
+        player1Attacks.foreach { case (row, col) =>
+          if(player2Ships.contains((row,col))) {
+            buttonMapAttack1((row, col)).style = "-fx-background-color: green;" // Red for attack hits/misses
+          } else {
+            buttonMapAttack1((row, col)).style = "-fx-background-color: red;" // Red for attack hits/misses
+          }
+        }
+
+        // Update Player 2's attacked positions
+        val player2Attacks = controller.getAttackShips(controller.getPlayer2)
+        player2Attacks.foreach { case (row, col) =>
+          if (player1Ships.contains((row, col))) {
+            buttonMapAttack2((row, col)).style = "-fx-background-color: green;"
+          } else {
+            buttonMapAttack2((row, col)).style = "-fx-background-color: red;"
+          }
+        }
+        messageLabel.text = "Game state loaded successfully!"
     }
 
     val saveButton: Button = new Button("Save") {

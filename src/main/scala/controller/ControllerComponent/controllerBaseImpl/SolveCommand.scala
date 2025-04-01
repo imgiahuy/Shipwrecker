@@ -27,7 +27,6 @@ class SolveCommand (controller: Controller) extends Command {
   }
 
   override def undoStep: Unit = {
-
     val new_momento_b1 = controller.b1
     val new_momento_b1_blank = controller.b1_blank
     val new_momento_b2 = controller.b2
@@ -44,9 +43,7 @@ class SolveCommand (controller: Controller) extends Command {
     momento_b2_blank = new_momento_b2_blank
 
   }
-
   override def redoStep: Unit = {
-
     val new_momento_b1 = controller.b1
     val new_momento_b1_blank = controller.b1_blank
     val new_momento_b2 = controller.b2

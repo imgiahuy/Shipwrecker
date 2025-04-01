@@ -1,6 +1,6 @@
 package controller.ControllerComponent.controllerBaseImpl
 
-import model.GameboardComponent.GameBaseImpl.{Cell, Value}
+import model.GameboardComponent.GameBaseImpl.Value
 import model.PlayerComponent.PlayerInterface
 import util.Command
 

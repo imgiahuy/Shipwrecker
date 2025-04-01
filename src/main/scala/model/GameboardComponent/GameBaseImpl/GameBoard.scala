@@ -9,34 +9,41 @@ import model.GameboardComponent.{CellInterface, GameBoardInterface}
 import scala.reflect.ClassTag
 
 case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
+  
+  private val FIXED_SIZE : Int = 12
 
   def this(size: Int) = this(new Board[Cell](size, Cell(☐)))
 
   override def placeShip(player: PlayerInterface, shipOpt: Option[ShipInterface], positions: List[(Int, Int)], value: CellInterface): GameBoard = {
     shipOpt match {
       case Some(ship) =>
-        // Ensure the ship size is between 2 and 5, and matches the number of provided positions
         if (ship.sizeOf() < 2 || ship.sizeOf() > 5 || positions.size != ship.sizeOf()) {
-          return copy(cells)
-        }
-        // Check if the positions are valid (no overlap, within bounds)
-        if (isPlacementValid(ship, positions) && positionValid(positions)) {
+          this
+        } else if (isPlacementValid(ship, positions) && positionValid(positions)) {
           value match {
             case cell: Cell =>
-              // Place the ship at each of the positions
-              for ((x, y) <- positions) {
-                cells.replace(x, y, cell) // Place the ship at the position
+              // Create a new board with updated cells
+              val updatedCells = cells.cells.zipWithIndex.map {
+                case (row, x) =>
+                  row.zipWithIndex.map {
+                    case (c, y) if positions.contains((x, y)) => cell
+                    case (c, _) => c
+                  }
               }
-              player.decrease() // Decrease ship count for the player
+              val newBoard = Board(updatedCells)
+              player.decrease()
+              GameBoard(newBoard)
             case _ =>
               throw new IllegalArgumentException("Expected a Cell instance for the value parameter.")
           }
+        } else {
+          this
         }
-        copy(cells)
       case None =>
-        copy(cells)
+        this
     }
   }
+
 
   // Helper method to check if a ship placement is valid (no overlapping, within bounds)
   override def isPlacementValid(ship: ShipInterface, positions: List[(Int, Int)]): Boolean = {
@@ -104,24 +111,6 @@ case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
   override def isEmpty: Boolean = {
     cells.cells.forall(row => row.forall(_ == Cell(Value.☐)))
   }
-
-//  private def isPlacementValid(ship: Ship, where: (Int, Int), dx: Int, dy: Int): Boolean = {
-//    val size = ship.sizeOf()
-//    val (startX, startY) = where
-//
-//    if (startX < 0 || startY < 0 || startX + dx * (size - 1) >= cells.cells.length || startY + dy * (size - 1) >= cells.cells(0).length) {
-//      return false
-//    }
-//
-//    for (i <- 0 until size) {
-//      val x = startX + i * dx
-//      val y = startY + i * dy
-//      if (cells.cells(x)(y) != Cell(Value.☐)) {
-//        return false
-//      }
-//    }
-//    true
-//  }
   override def getShipPositions: List[(Int, Int)] = {
     (for {
       row <- cells.cells.indices
@@ -154,5 +143,9 @@ case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
 
   override def getCellSize: Int = {
     cells.cells.length
+  }
+
+  override def createEmptyBoard: GameBoard = {
+    new GameBoard(FIXED_SIZE)
   }
 }

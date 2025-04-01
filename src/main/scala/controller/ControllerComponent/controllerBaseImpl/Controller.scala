@@ -23,19 +23,9 @@ class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterfa
   var gameState: GameState = CONTINUE
 
   override def clean(): Unit = {
-    b1.clean()
-    b2.clean()
-    show.clean()
-    b1_blank.clean()
-    b2_blank.clean()
-    player1.numShip = player1.numShip + (remainingShips(player1.name) - player1.numShip)
-    player2.numShip = player2.numShip + (remainingShips(player2.name) - player2.numShip)
-
-    // Update the remainingShips map to match
-    remainingShips = Map(
-      player1.name -> player1.numShip,
-      player2.name -> player2.numShip
-    )
+    List(b1, b2, show, b1_blank, b2_blank).foreach(_.clean())
+    player1.shipCounter.update(remainingShips(player1.name))
+    player2.shipCounter.update(remainingShips(player2.name))
     notifyObservers
   }
 
@@ -49,17 +39,9 @@ class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterfa
     notifyObservers
   }
 
-  override def getNamePlayer1: String = {
-    player1.name
-  }
-
-  override def getNamePlayer2: String = {
-    player2.name
-  }
-
-  override def showMe(): Unit = {
-    show.display()
-  }
+  override def getNamePlayer1: String = player1.name
+  override def getNamePlayer2: String = player2.name
+  override def showMe(): Unit = show.display()
 
   override def boardShow(player: String): Unit = {
     if (player == player1.name) {
@@ -79,9 +61,8 @@ class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterfa
     }
   }
 
-  override def getNumShip(playerName: String): Int = {
-    remainingShips.getOrElse(playerName, 0)
-  }
+  override def getNumShip(playerName: String): Int = remainingShips.getOrElse(playerName, 0)
+
 
   override def attack(pox: Int, poy: Int, player: String): Unit = {
     val attacker = if (player == player1.name) player1 else player2
@@ -108,38 +89,20 @@ class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterfa
     gameBoard.getAttackPositions
   }
 
-  override def getPlayer1: PlayerInterface = {
-    player1
-  }
-
-  override def getPlayer2: PlayerInterface = {
-    player2
-  }
-
-  override def getGameState: GameState = {
-    gameState
-  }
-
-  override def adjustGameState(state: GameState) : Unit = {
-    gameState = state
-  }
-
+  override def getPlayer1: PlayerInterface = player1
+  override def getPlayer2: PlayerInterface = player2
+  override def getGameState: GameState = gameState
+  override def adjustGameState(state: GameState) : Unit = gameState = state
   override def getBoard1: GameBoardInterface = b1
-
   override def getBoard2: GameBoardInterface = b2
-
   override def load: Unit = {
-    val (loadedB1, loadedB2, loadedB1Blank, loadedB2Blank) = fileIO.load
+    val (loadedB1, loadedB2, loadedB1Blank, loadedB2Blank, loadPlayer1, loadPlayer2) = fileIO.load
     b1 = loadedB1
     b2 = loadedB2
     b1_blank = loadedB1Blank
     b2_blank = loadedB2Blank
-
-    // Load player information from the file
-    player1.numShip = fileIO.getPlayer1ShipCount // Assuming method in FileIOInterface to retrieve player 1's ship count
-    player2.numShip = fileIO.getPlayer2ShipCount // Assuming method in FileIOInterface to retrieve player 2's ship count
-
-    // Update the remaining ships map
+    player1.shipCounter.update(loadPlayer1)
+    player2.shipCounter.update(loadPlayer2)
     remainingShips = Map(
       player1.name -> player1.numShip,
       player2.name -> player2.numShip
