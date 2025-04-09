@@ -7,6 +7,7 @@ import model.GameboardComponent.GameBaseImpl.shipModel.ShipInterface
 import model.GameboardComponent.{CellInterface, GameBoardInterface}
 
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success, Try}
 
 case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
   
@@ -15,33 +16,28 @@ case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
   def this(size: Int) = this(new Board[Cell](size, Cell(☐)))
 
   override def placeShip(player: PlayerInterface, shipOpt: Option[ShipInterface], positions: List[(Int, Int)], value: CellInterface): GameBoard = {
-    shipOpt match {
-      case Some(ship) =>
-        if (ship.sizeOf() < 2 || ship.sizeOf() > 5 || positions.size != ship.sizeOf()) {
-          this
-        } else if (isPlacementValid(ship, positions) && positionValid(positions)) {
-          value match {
-            case cell: Cell =>
-              // Create a new board with updated cells
-              val updatedCells = cells.cells.zipWithIndex.map {
-                case (row, x) =>
-                  row.zipWithIndex.map {
-                    case (c, y) if positions.contains((x, y)) => cell
-                    case (c, _) => c
-                  }
-              }
-              val newBoard = Board(updatedCells)
-              player.decrease()
-              GameBoard(newBoard)
-            case _ =>
-              throw new IllegalArgumentException("Expected a Cell instance for the value parameter.")
+    val result = for {
+      ship <- shipOpt
+      _ <- Option.when(ship.sizeOf() >= 2 && ship.sizeOf() <= 5 && positions.size == ship.sizeOf())(())
+      _ <- Option.when(isPlacementValid(ship, positions) && positionValid(positions))(())
+      cell <- value match {
+        case c: Cell => Some(c)
+        case _ => None
+      }
+    } yield {
+      val updatedCells = cells.cells.zipWithIndex.map {
+        case (row, x) =>
+          row.zipWithIndex.map {
+            case (c, y) if positions.contains((x, y)) => cell
+            case (c, _) => c
           }
-        } else {
-          this
-        }
-      case None =>
-        this
+      }
+      val newBoard = Board(updatedCells)
+      player.decrease()
+      GameBoard(newBoard)
     }
+
+    result.getOrElse(this)
   }
 
 
@@ -87,11 +83,11 @@ case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
 
   override def hit(where: (Int, Int)): Boolean = {
     val (row, col) = where
-    val currentCell = cells.cells(row)(col)
-    if (currentCell == Cell(Value.☐) || currentCell == Cell(Value.X) ) {
-      false
-    } else {
-      true
+    Try(cells.cells(row)(col)) match {
+      case Success(cell) =>
+        cell.value != Value.☐ && cell.value != Value.X
+      case Failure(_) =>
+        false // or log the error, or rethrow, depending on your needs
     }
   }
 
@@ -132,17 +128,18 @@ case class GameBoard @Inject() (cells: Board[Cell]) extends GameBoardInterface {
     val hitSuccessful = hit((x, y))
     hitSuccessful
   }
+  
 
   override def updateCell(x: Int, y: Int, value: Value): Unit = {
     cells.replace(x, y, Cell(value))
   }
 
   override def getCellValue(x: Int, y: Int): Value = {
-    cells.cells(x)(y).value
+    Try(cells.cells(x)(y).value).getOrElse(Value.☐)
   }
 
   override def getCellSize: Int = {
-    cells.cells.length
+    Try(cells.cells.length).getOrElse(0)
   }
 
   override def createEmptyBoard: GameBoard = {

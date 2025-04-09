@@ -1,8 +1,6 @@
 package model.GameboardComponent.GameBaseImpl
-
 import com.google.inject.{Inject, Provider}
 import model.GameboardComponent.GameBaseImpl.Value.☐
-
 
 class BoardProvider @Inject() extends Provider[Board[Cell]] {
   override def get(): Board[Cell] = {

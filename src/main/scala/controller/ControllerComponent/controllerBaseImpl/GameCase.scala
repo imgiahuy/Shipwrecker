@@ -12,7 +12,7 @@ object GameCase {
     case PLAYER_2_WIN => player2State(current)
     }
   }
-  def continueState(current : State) : String = CONTINUE.statement
-  def player1State(current : State) : String = PLAYER_1_WIN.statement
-  def player2State(current: State) : String = PLAYER_2_WIN.statement
+  private def continueState(current : State) : String = CONTINUE.statement
+  private def player1State(current : State) : String = PLAYER_1_WIN.statement
+  private def player2State(current: State) : String = PLAYER_2_WIN.statement
 }
