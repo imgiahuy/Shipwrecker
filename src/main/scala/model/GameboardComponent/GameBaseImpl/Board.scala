@@ -10,12 +10,12 @@ case class Board [Cell : ClassTag](cells : Array[Array[Cell]]) {
   def numCols: Int = if (numRows > 0) cells(0).length else 0 // Assuming all rows have the same number of columns
 
   def replace(row: Int, col: Int, value: Cell): Board[Cell] = {
-    val newCells = cells.clone()
+    val newCells = cells.map(_.clone())
     newCells(row)(col) = value
     Board(newCells)
   }
 
-  def replaceAll(value : Cell) : Unit = {
+  def replaceAll(value : Cell) : Board[Cell] = {
     val newCells = cells.map(_.map(_ => value))
     Board(newCells)
   }

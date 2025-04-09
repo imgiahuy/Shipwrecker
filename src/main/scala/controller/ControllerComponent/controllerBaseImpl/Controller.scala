@@ -95,6 +95,7 @@ class Controller @Inject() (var b1: GameBoardInterface, var b2: GameBoardInterfa
   override def adjustGameState(state: GameState) : Unit = gameState = state
   override def getBoard1: GameBoardInterface = b1
   override def getBoard2: GameBoardInterface = b2
+  
   override def load: Unit = {
     val (loadedB1, loadedB2, loadedB1Blank, loadedB2Blank, loadPlayer1, loadPlayer2) = fileIO.load
     b1 = loadedB1

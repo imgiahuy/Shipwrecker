@@ -16,9 +16,7 @@ class PlaceShipCommand(player: PlayerInterface, shipSize: Int, positions: List[(
     val shipOpt = factory.createShip(shipSize)
     shipOpt match {
       case Some(ship) =>
-        // Save the affected cells before placing the ship
         previousCells = positions.map { case (row, col) => (row, col, board.getCellValue(row,col)) }
-        // Attempt to place the ship using the new placeShip method
         if (player == controller.player1) {
           controller.b1 = controller.b1.placeShip(player, Some(ship), positions, Cell(value = O))
         } else if (player == controller.player2) {
@@ -31,7 +29,6 @@ class PlaceShipCommand(player: PlayerInterface, shipSize: Int, positions: List[(
   
   override def undoStep: Unit = {
     val board = if (player == controller.player1) controller.b1 else controller.b2
-    // Restore the previous state of the affected cells
     previousCells.foreach { case (row, col, value) =>
       board.updateCell(row, col, value)
     }
