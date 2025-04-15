@@ -10,7 +10,9 @@ object Shipwrecker {
 
   //something is missing
 
-  val controller = new Controller()
+  val controller = new Controller(
+    //something is missing
+  )
   val Tui = new tui(controller)
   val Gui = new gui(controller)
 

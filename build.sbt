@@ -59,35 +59,35 @@ lazy val model = project
   .settings(
     name := "model",
     dependencies
-  )
+  ).dependsOn(util)
 
 lazy val fileIO = project
   .in(file("fileIO"))
   .settings(
     name := "fileIO",
     dependencies
-  )
+  ).dependsOn(model)
 
 lazy val launcher = project
   .in(file("launcher"))
   .settings(
     name := "launcher",
     dependencies
-  )
+  ).dependsOn(model, util, fileIO, tui, gui, controller)
 
 lazy val gui = project
   .in(file("gui"))
   .settings(
     name := "gui",
     dependencies
-  )
+  ).dependsOn(util, controller)
 
 lazy val tui = project
   .in(file("tui"))
   .settings(
     name := "tui",
     dependencies
-  )
+  ).dependsOn(util, controller)
 
 
 

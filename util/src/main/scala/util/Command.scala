@@ -1,3 +1,5 @@
+package util
+
 trait Command {
 
   def doStep : Unit

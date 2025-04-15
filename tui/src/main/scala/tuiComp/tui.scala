@@ -1,3 +1,5 @@
+package tuiComp
+
 //something is missing
 
 import scala.io.StdIn.*
