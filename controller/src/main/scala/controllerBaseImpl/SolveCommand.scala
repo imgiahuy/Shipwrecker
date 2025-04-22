@@ -1,5 +1,10 @@
 package controllerBaseImpl
 
+import GameboardComponent.GameBaseImpl.Solver
+import GameboardComponent.GameBoardInterface
+import GameboardComponent.GameBaseImpl.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
+import util.Command
+
 //something is missing
 
 class SolveCommand (controller: Controller) extends Command {

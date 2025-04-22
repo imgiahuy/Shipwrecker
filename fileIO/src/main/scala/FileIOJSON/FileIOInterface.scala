@@ -1,6 +1,7 @@
 package FileIOJSON
 
-//something is missing
+import GameboardComponent.GameBoardInterface
+import PlayerComponent.PlayerInterface
 
 
 trait FileIOInterface {

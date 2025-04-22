@@ -12,6 +12,7 @@ import scalafx.scene.layout.{BorderPane, GridPane, StackPane, VBox}
 import scalafx.scene.paint.Color
 
 import util.Observer
+import GameboardComponent.GameBaseImpl.State.CONTINUE
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 

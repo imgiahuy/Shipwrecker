@@ -2,6 +2,9 @@ package FileIOJSON
 
 //something is missing
 
+import GameboardComponent.GameBaseImpl.Value
+import GameboardComponent.GameBoardInterface
+import PlayerComponent.PlayerInterface
 import play.api.libs.json.*
 
 import java.io.*
@@ -38,9 +41,9 @@ class FileIOJSON  (val gameboard: GameBoardInterface) extends FileIOInterface {
       val valueText: String = (cell \ "value").as[String]
 
       val value: Value = valueText match {
-        case "X" => X
+        case "X" => Value.X
         case "O" => Value.O
-        case "☐" => ☐
+        case "☐" => Value.☐
       }
       board.updateCell(row, col, value)
     }

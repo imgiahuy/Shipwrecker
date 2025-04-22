@@ -1,6 +1,9 @@
 package controllerBaseImpl
 
-//something is missing
+import GameboardComponent.GameBaseImpl.Value
+import PlayerComponent.PlayerInterface
+import util.Command
+
 
 class AttackCommand (player: PlayerInterface, pox: Int, poy: Int, controller: Controller) extends Command {
 

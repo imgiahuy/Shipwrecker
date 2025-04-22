@@ -1,5 +1,10 @@
 package controllerBaseImpl
 
+import GameboardComponent.GameBoardInterface
+import PlayerComponent.PlayerInterface
+import controllerBaseImpl.GameState.GameState
+import util.Observable
+
 //something is missing
 
 

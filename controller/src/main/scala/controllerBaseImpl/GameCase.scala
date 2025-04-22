@@ -1,7 +1,9 @@
 package controllerBaseImpl
 
-//something is missing
+import GameboardComponent.GameBaseImpl.State
+import GameboardComponent.GameBaseImpl.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
 
+//something is missin
 
 object GameCase {
   var current: State = CONTINUE

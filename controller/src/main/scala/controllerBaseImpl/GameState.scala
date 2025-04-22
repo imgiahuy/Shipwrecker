@@ -1,5 +1,7 @@
 package controllerBaseImpl
 
+import GameboardComponent.GameBaseImpl.State
+
 //something is missing
 
 

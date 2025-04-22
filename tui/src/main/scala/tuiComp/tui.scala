@@ -1,6 +1,8 @@
 package tuiComp
 
-//something is missing
+import PlayerComponent.PlayerInterface
+import controllerBaseImpl.{ControllerInterface, GameState}
+import util.Observer
 
 import scala.io.StdIn.*
 import scala.concurrent.Promise
