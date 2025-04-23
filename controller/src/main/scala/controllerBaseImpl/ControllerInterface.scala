@@ -5,8 +5,10 @@ import PlayerComponent.PlayerInterface
 import controllerBaseImpl.GameState.GameState
 import util.Observable
 
-//something is missing
-
+import GameboardComponent.GameBoardInterface
+import PlayerComponent.PlayerInterface
+import controllerBaseImpl.GameState.GameState
+import util.Observable
 
 trait ControllerInterface extends Observable {
 
@@ -26,9 +28,9 @@ trait ControllerInterface extends Observable {
 
   def showMe(): Unit
 
-  def boardShow(player: String): Unit
+  def boardShow(player: String): String
 
-  def blankBoardShow(player: String): Unit
+  def blankBoardShow(player: String): String
 
   def getNumShip(playerName: String): Int
 

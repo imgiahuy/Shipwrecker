@@ -20,7 +20,7 @@ trait GameBoardInterface {
 
   def copyBoard(): GameBoardInterface
 
-  def display(): Unit
+  def display(): String
 
   def isEmpty: Boolean
 

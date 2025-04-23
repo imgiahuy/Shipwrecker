@@ -2,8 +2,7 @@ package controllerBaseImpl
 
 import GameboardComponent.GameBaseImpl.State
 
-//something is missing
-
+import GameboardComponent.GameBaseImpl.State
 
 object GameState {
   

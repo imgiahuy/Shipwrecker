@@ -1,13 +1,16 @@
 package FileIOJSON
 
-//something is missing
-
+import GameboardComponent.GameBaseImpl.Value
+import GameboardComponent.GameBaseImpl.Value.*
+import GameboardComponent.GameBoardInterface
+import PlayerComponent.PlayerInterface
 import GameboardComponent.GameBaseImpl.Value
 import GameboardComponent.GameBoardInterface
 import PlayerComponent.PlayerInterface
 import play.api.libs.json.*
 
 import java.io.*
+
 
 class FileIOJSON  (val gameboard: GameBoardInterface) extends FileIOInterface {
 

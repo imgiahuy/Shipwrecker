@@ -1,6 +1,6 @@
 {
   "gameInfo" : {
-    "ShipNumber1" : 4,
+    "ShipNumber1" : 5,
     "ShipNumber2" : 5
   },
   "board" : {
@@ -412,19 +412,19 @@
       }, {
         "row" : 8,
         "col" : 5,
-        "value" : "O"
+        "value" : "☐"
       }, {
         "row" : 8,
         "col" : 6,
-        "value" : "O"
+        "value" : "☐"
       }, {
         "row" : 8,
         "col" : 7,
-        "value" : "O"
+        "value" : "☐"
       }, {
         "row" : 8,
         "col" : 8,
-        "value" : "O"
+        "value" : "☐"
       }, {
         "row" : 8,
         "col" : 9,
@@ -2149,7 +2149,7 @@
       }, {
         "row" : 8,
         "col" : 5,
-        "value" : "O"
+        "value" : "☐"
       }, {
         "row" : 8,
         "col" : 6,

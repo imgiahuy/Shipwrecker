@@ -1,5 +1,6 @@
 package guiComp
 
+import GameboardComponent.GameBaseImpl.State.CONTINUE
 import controllerBaseImpl.ControllerInterface
 import scalafx.application.JFXApp3
 import scalafx.application.JFXApp3.PrimaryStage
@@ -10,9 +11,8 @@ import scalafx.scene.control.{Button, Label}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.{BorderPane, GridPane, StackPane, VBox}
 import scalafx.scene.paint.Color
-
 import util.Observer
-import GameboardComponent.GameBaseImpl.State.CONTINUE
+
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 

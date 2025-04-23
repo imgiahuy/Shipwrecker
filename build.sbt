@@ -1,6 +1,10 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.4.1"
 
+
+val akkaVersion = "2.8.7"
+val akkaHttpVersion = "10.5.3"
+
 lazy val dependencies = Seq (
         libraryDependencies += "org.scalafx" %% "scalafx" % "22.0.0-R33",
         libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18",
@@ -14,7 +18,16 @@ lazy val dependencies = Seq (
         libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.3.0",
         libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.6" ,
         libraryDependencies +=  "org.mockito" % "mockito-core" % "5.14.2" % Test,
-        libraryDependencies += "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test
+        libraryDependencies += "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test,
+        libraryDependencies +="com.typesafe.akka" %% "akka-stream" % akkaVersion,
+        libraryDependencies +="com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
+        libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+        libraryDependencies +="io.circe" %% "circe-generic" % "0.14.7",
+        libraryDependencies +="io.circe" %% "circe-parser" % "0.14.10",
+        libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.11",
+        libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.5"
+
+
 )
 
 lazy val root = project

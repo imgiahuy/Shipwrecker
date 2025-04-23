@@ -5,7 +5,10 @@ import GameboardComponent.GameBoardInterface
 import GameboardComponent.GameBaseImpl.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
 import util.Command
 
-//something is missing
+import GameboardComponent.GameBaseImpl.Solver
+import GameboardComponent.GameBaseImpl.State.{CONTINUE, PLAYER_1_WIN, PLAYER_2_WIN}
+import GameboardComponent.GameBoardInterface
+import util.Command
 
 class SolveCommand (controller: Controller) extends Command {
   var momento_b1: GameBoardInterface = controller.b1

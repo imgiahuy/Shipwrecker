@@ -1,16 +1,21 @@
 package controllerBaseImpl
 
 import FileIOJSON.FileIOInterface
+import GameboardComponent.GameBaseImpl.State.CONTINUE
 import GameboardComponent.GameBoardInterface
 import PlayerComponent.PlayerInterface
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import controllerBaseImpl.GameState.GameState
 import util.UndoManager
-import GameboardComponent.GameBaseImpl.State.CONTINUE
-//something is missing
+
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{ExecutionContext, Future}
 
 
 class Controller (var b1: GameBoardInterface, var b2: GameBoardInterface, var show: GameBoardInterface, var b1_blank: GameBoardInterface, var b2_blank: GameBoardInterface,
-                  var player1: PlayerInterface, var player2: PlayerInterface, fileIO: FileIOInterface) extends ControllerInterface {
+                  var player1: PlayerInterface, var player2: PlayerInterface, fileIO: FileIOInterface)(implicit system: ActorSystem, executionContext: ExecutionContext) extends ControllerInterface {
 
   private var remainingShips: Map[String, Int] = Map(
     player1.name -> player1.numShip,
@@ -24,11 +29,13 @@ class Controller (var b1: GameBoardInterface, var b2: GameBoardInterface, var sh
     List(b1, b2, show, b1_blank, b2_blank).foreach(_.clean())
     player1.shipCounter.update(remainingShips(player1.name))
     player2.shipCounter.update(remainingShips(player2.name))
+    update()
     notifyObservers
   }
 
   override def placeShips(player: PlayerInterface, shipSize: Int, positions: List[(Int, Int)]): Unit = {
     undoManager.doStep(new PlaceShipCommand(player, shipSize, positions, this))
+    update()
     notifyObservers
   }
 
@@ -41,22 +48,16 @@ class Controller (var b1: GameBoardInterface, var b2: GameBoardInterface, var sh
   override def getNamePlayer2: String = player2.name
   override def showMe(): Unit = show.display()
 
-  override def boardShow(player: String): Unit = {
-    if (player == player1.name) {
-      b1.display()
-    }
-    if (player == player2.name) {
-      b2.display()
-    }
+  override def boardShow(player: String): String = {
+    if (player == getNamePlayer1) b1.display()
+    else if (player == getNamePlayer2) b2.display()
+    else "Unknown player"
   }
 
-  override def blankBoardShow(player: String): Unit = {
-    if (player == player1.name) {
-      b1_blank.display()
-    }
-    if (player == player2.name) {
-      b2_blank.display()
-    }
+  override def blankBoardShow(player: String): String = {
+    if (player == getNamePlayer1) b1_blank.display()
+    else if (player == getNamePlayer2) b2_blank.display()
+    else "Unknown player"
   }
 
   override def getNumShip(playerName: String): Int = remainingShips.getOrElse(playerName, 0)
@@ -65,16 +66,19 @@ class Controller (var b1: GameBoardInterface, var b2: GameBoardInterface, var sh
   override def attack(pox: Int, poy: Int, player: String): Unit = {
     val attacker = if (player == player1.name) player1 else player2
     undoManager.doStep(new AttackCommand(attacker, pox, poy, this))
+    update()
     notifyObservers
   }
 
   override def undo: Unit = {
     undoManager.undoStep
+    update()
     notifyObservers
   }
 
   override def redo: Unit = {
     undoManager.redoStep
+    update()
     notifyObservers
   }
   override def getPlacedShips(player: PlayerInterface): List[(Int, Int)] = {
@@ -112,5 +116,21 @@ class Controller (var b1: GameBoardInterface, var b2: GameBoardInterface, var sh
   override def save: Unit = {
     fileIO.save(b1, b2, b1_blank, b2_blank, player1, player2)
     notifyObservers
+  }
+
+  def update(): Unit = {
+    // Send a GET request to "/game/state" to retrieve the updated game state
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(HttpRequest(uri = "http://localhost:8080/game/state"))
+
+    // Handle the response asynchronously
+    responseFuture.onComplete {
+      case scala.util.Success(response) =>
+        response.entity.toStrict(2.seconds).map { entity =>
+          val updatedState = entity.data.utf8String // Updated game state response
+          println(s"Game State Updated:\n$updatedState") // Print updated game state or update the UI
+        }
+      case scala.util.Failure(exception) =>
+        println(s"Error fetching game state: $exception")
+    }
   }
 }

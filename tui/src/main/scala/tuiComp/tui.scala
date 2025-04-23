@@ -1,16 +1,20 @@
 package tuiComp
 
-import PlayerComponent.PlayerInterface
-import controllerBaseImpl.{ControllerInterface, GameState}
-import util.Observer
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import scala.concurrent.Future
+import akka.http.scaladsl.model.ContentTypes._
 
-import scala.io.StdIn.*
-import scala.concurrent.Promise
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class tui(controller: ControllerInterface) extends Observer {
+class tui {
 
-  controller.add(this)
+  // HTTP Client setup
+  implicit val system: ActorSystem = ActorSystem("game-system")
 
+  // Process input from TUI
   def processInput(input: String): Unit = {
     input.trim match {
       case "" => handleEmptyInput()
@@ -25,153 +29,109 @@ class tui(controller: ControllerInterface) extends Observer {
 
   def handleCommand(command: String): Unit = {
     command match {
-      case "new game" =>
-        controller.clean()
-        println("New game started!")
+      case "new game" => sendRequest("POST", "/game/new", "")
+      case input if input.startsWith("place") => processPlaceShip(input.stripPrefix("place").trim)
+      case input if input.startsWith("attack") => processAttack(input.stripPrefix("attack").trim)
+      case "undo" => sendRequest("POST", "/game/undo", "")
+      case "redo" => sendRequest("POST", "/game/redo", "")
+      case "check" => sendRequest("GET", "/game/state", "")
+      case "load" => sendRequest("POST", "/game/load", "")
+      case "save" => sendRequest("POST", "/game/save", "")
+      case _ => println("Unknown command. Please try again.")
+    }
+  }
 
-      case input if input.startsWith("place ship") =>
-        processPlaceShip(input.stripPrefix("place ship").trim)
-        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.getPlayer1.numShip}")
-        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.getPlayer2.numShip}")
+  // Send HTTP requests to the server
+  private def sendRequest(method: String, path: String, body: String, triggerUpdate: Boolean = true): Unit = {
+    val request = method match {
+      case "POST" => HttpRequest(HttpMethods.POST, uri = s"http://localhost:8080$path", entity = HttpEntity(ContentTypes.`application/json`, body))
+      case "GET"  => HttpRequest(HttpMethods.GET, uri = s"http://localhost:8080$path")
+      case _ => throw new IllegalArgumentException("Unsupported HTTP method")
+    }
 
-      case input if input.startsWith("attack") =>
-        processAttack(input.stripPrefix("attack").trim)
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(request)
 
-      case "undo" =>
-        controller.undo
-        println("Undo successful.")
-        println(s"Remaining ships for ${controller.getNamePlayer1}: ${controller.getPlayer1.numShip}")
-        println(s"Remaining ships for ${controller.getNamePlayer2}: ${controller.getPlayer2.numShip}")
+    responseFuture.onComplete {
+      case scala.util.Success(response) =>
+        handleResponse(response, triggerUpdate)
+      case scala.util.Failure(exception) =>
+        println(s"Error: $exception")
+    }
+  }
 
-      case "redo" =>
-        controller.redo
-        println("Redo successful.")
+  // Handle server responses
+  private def handleResponse(response: HttpResponse, triggerUpdate : Boolean): Unit = {
+    val status = response.status
+    val responseString = Unmarshal(response.entity).to[String]
 
-      case "check" =>
-        val check = controller.solver()
-        println(s"Check result: $check")
-
-      case "load" =>
-        controller.load
-        println("Game loaded.")
-
-      case "save" =>
-        controller.save
-        println("Game saved.")
-
-      case _ =>
-        println("Unknown command. Please try again.")
+    responseString.onComplete {
+      case scala.util.Success(body) =>
+        println(s"Server Response: $status - $body")
+        if (status.isSuccess() && triggerUpdate) {
+          update()
+        }
+      case scala.util.Failure(exception) =>
+        println(s"Failed to parse response: $exception")
     }
   }
 
   // --- Observer Update ---
-  override def update(): Unit = {
-    displayBoards()
-    showGameState()
+  def update(): Unit = {
+    sendRequest("GET", "/game/state", "", triggerUpdate = false)
   }
-
-  def displayBoards(): Unit = {
-    println(s"${controller.getNamePlayer1} Board:")
-    controller.boardShow(controller.getNamePlayer1)
-    println(s"${controller.getNamePlayer1} Blank Board:")
-    controller.blankBoardShow(controller.getNamePlayer1)
-
-    println(s"${controller.getNamePlayer2} Board:")
-    controller.boardShow(controller.getNamePlayer2)
-    println(s"${controller.getNamePlayer2} Blank Board:")
-    controller.blankBoardShow(controller.getNamePlayer2)
-  }
-
-  def showGameState(): Unit = {
-    println("\n")
-    println(GameState.message(controller.getGameState))
-  }
-
-  val guiUpdatePromise: Promise[Unit] = Promise()
 
   // --- Helpers ---
-  private def validatePlayer(playerName: String): Option[PlayerInterface] = {
-    if (playerName == controller.getNamePlayer1) Some(controller.getPlayer1)
-    else if (playerName == controller.getNamePlayer2) Some(controller.getPlayer2)
-    else None
-  }
-
-  private def validateShipSize(shipSizeStr: String): Option[Int] = {
-    shipSizeStr.toIntOption.filter(size => size >= 2 && size <= 5)
-  }
-
-  private def parsePosition(posStr: String): Option[(Int, Int)] = {
-    val pattern = """\((\d+),\s*(\d+)\)""".r
-    posStr match {
-      case pattern(x, y) => Some((x.toInt, y.toInt))
-      case _ => None
-    }
-  }
-
   private def processPlaceShip(commandArgs: String): Unit = {
     val args = commandArgs.split(" ")
 
     if (args.length < 3) {
-      println("Invalid input format. Use: place ship <player_name> <ship_size> <positions>")
-      println("Example: place ship Player1 3 (5,7) (5,8) (5,9)")
+      println("Invalid format. Use: place <player_name> <x1,y1> <x2,y2> ...")
+      println("Example: place Captain 1,1 1,2 1,3")
       return
     }
 
-    val Array(playerName, shipSizeStr, positionsStr@_*) = args
+    val playerName = args(0)
+    val positions = args.drop(1)
 
-    validatePlayer(playerName) match {
-      case Some(player) =>
-        validateShipSize(shipSizeStr) match {
-          case Some(shipSize) =>
-            val positions = positionsStr.flatMap(parsePosition).toList
-            if (player.numShip > 0) {
-              controller.placeShips(player, shipSize, positions)
-            } else {
-              println(s"$playerName, you've already placed all your ships.")
-            }
-          case None =>
-            println("Invalid ship size. Use one of: 2, 3, 4, 5")
-        }
-      case None =>
-        println(s"Unknown player: $playerName. Please enter a valid name.")
+    val parsedPositions = positions.flatMap { pos =>
+      pos.split(",") match {
+        case Array(x, y) if x.forall(_.isDigit) && y.forall(_.isDigit) =>
+          Some(s"($x,$y)")
+        case _ =>
+          println(s"Ignored invalid position: $pos")
+          None
+      }
     }
-  }
 
-  private def validateAttacker(attackerName: String): Option[(PlayerInterface, PlayerInterface)] = {
-    if (attackerName == controller.getNamePlayer1) {
-      Some(controller.getPlayer1, controller.getPlayer2)
-    } else if (attackerName == controller.getNamePlayer2) {
-      Some(controller.getPlayer2, controller.getPlayer1)
-    } else {
-      None
+    if (parsedPositions.isEmpty) {
+      println("No valid positions provided.")
+      return
     }
+
+    val shipSize = parsedPositions.length
+    val body = s"$playerName $shipSize ${parsedPositions.mkString(" ")}"
+    sendRequest("POST", "/game/placeShip", body)
   }
 
   private def processAttack(commandArgs: String): Unit = {
     val args = commandArgs.split(" ")
 
-    if (args.length != 3) {
-      println("Invalid input format. Use: attack <attacker_name> <x> <y>")
-      println("Example: attack Player1 5 7")
+    if (args.length != 2) {
+      println("Invalid input format. Use: attack <attacker_name> <x,y>")
       return
     }
 
-    val Array(attackerName, poxStr, poyStr) = args
+    val attackerName = args(0)
+    val coords = args(1).split(",")
 
-    validateAttacker(attackerName) match {
-      case Some((attacker, defender)) =>
-        val (pox, poy) = (poxStr.toIntOption, poyStr.toIntOption) match {
-          case (Some(x), Some(y)) => (x, y)
-          case _ =>
-            println("Invalid coordinates. Ensure both x and y are integers.")
-            return
-        }
-
-        println(s"$attackerName attacks ${defender.name} at ($pox, $poy)!")
-        controller.attack(pox, poy, defender.name)
-
-      case None =>
-        println(s"Unknown attacker: $attackerName. Please enter a valid name.")
+    if (coords.length != 2 || !coords(0).forall(_.isDigit) || !coords(1).forall(_.isDigit)) {
+      println("Invalid coordinates. Use format: x,y")
+      return
     }
+
+    val x = coords(0)
+    val y = coords(1)
+    val body = s"$attackerName $x,$y"
+    sendRequest("POST", "/game/attack", body)
   }
 }

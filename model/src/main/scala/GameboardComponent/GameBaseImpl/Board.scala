@@ -19,10 +19,15 @@ case class Board [Cell : ClassTag](cells : Array[Array[Cell]]) {
     val newCells = cells.map(_.map(_ => value))
     Board(newCells)
   }
-  def display(): Unit = {
-    println(s"Displaying board with dimensions: ${cells.length} x ${cells(0).length}")
+
+  def display(): String = {
+    val builder = new StringBuilder
+    builder.append(s"Displaying board with dimensions: ${cells.length} x ${cells(0).length}\n")
+
     cells.zipWithIndex.foreach { case (row, rowIndex) =>
-      println(s"Row $rowIndex: ${row.mkString(" | ")}")
+      builder.append(s"Row $rowIndex: ${row.mkString(" | ")}\n")
     }
+
+    builder.toString()
   }
 }

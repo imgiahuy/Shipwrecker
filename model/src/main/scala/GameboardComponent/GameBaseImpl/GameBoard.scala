@@ -101,7 +101,7 @@ case class GameBoard (cells: Board[Cell]) extends GameBoardInterface {
     GameBoard(newBoard)
   }
 
-  override def display(): Unit = cells.display()
+  override def display(): String = cells.display()
 
   override def isEmpty: Boolean = {
     cells.cells.forall(row => row.forall(_ == Cell(Value.☐)))
