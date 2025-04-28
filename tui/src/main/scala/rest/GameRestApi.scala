@@ -29,7 +29,7 @@ object GameRestApi {
 
   val controller: Controller = new Controller(board_pl1, board_pl1_blk, board_pl2, board_pl2_blk, board_show, player1, player2, fileIO)
 
-  val route: Route =
+  private val route: Route =
     pathPrefix("game") { // Ensure that this pathPrefix is properly placed
       path("placeShip") {
         post {
@@ -74,7 +74,6 @@ object GameRestApi {
                   val x = coords(0).toInt
                   val y = coords(1).toInt
                   controller.attack(x, y, playerName)
-                  controller.update()
                   complete(s"$playerName attacked at ($x, $y).")
                 } else {
                   complete("Invalid coordinate format. Use x,y with numbers.")

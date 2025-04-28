@@ -6,10 +6,7 @@ import PlayerComponent.PlayerInterface
 import util.Command
 
 import GameboardComponent.GameBaseImpl.Value.O
-import GameboardComponent.GameBaseImpl.{Cell, Value}
-import GameboardComponent.GameBaseImpl.shipModel.SimpleShipFactory
-import PlayerComponent.PlayerInterface
-import util.Command
+import GameboardComponent.GameBaseImpl
 
 class PlaceShipCommand(player: PlayerInterface, shipSize: Int, positions: List[(Int, Int)], controller: Controller) extends Command {
   
